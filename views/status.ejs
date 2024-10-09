@@ -127,15 +127,14 @@
                 <td colspan="2">No network status available</td>
               <% } %>
               <td>
-                <button onclick="restartClient('<%= clientId %>')">Restart</button>
-                <!-- <button onclick="updateApp('<%= clientId %>')">Update App</button> -->
-                <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
-                <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-                <button onclick="muteClient('<%= clientId %>')">Mute</button>
-                <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
-                <button onclick="deleteClient('<%= clientId %>')">Delete</button>
-
-              </td>
+          <button onclick="restartClient('<%= clientId %>')">Restart</button>
+          <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
+          <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
+          <button onclick="muteClient('<%= clientId %>')">Mute</button>
+          <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
+          <button onclick="deleteClient('<%= clientId %>')">Delete</button>
+          <button onclick="getDeviceConfig('<%= clientId %>')">Get Device Config</button> <!-- New Button -->
+          </td>
             </tr>
           <% }) %>
         </tbody>
@@ -278,6 +277,14 @@
         });
     });
   </script>
-  
+  <script>
+  function getDeviceConfig(clientId) {
+    fetch(`/get-device-config/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(`Config for ${clientId}: ${JSON.stringify(data.config)}`))
+      .catch(error => console.error('Error:', error));
+  }
+</script>
+
 </body>
 </html>
