@@ -143,6 +143,93 @@ ws.on('message', async (message) => {
 
 
 
+app.post('/device-config/:id', async (req, res) => {
+  const data = req.body; // Assuming the device config data is sent in the body
+
+  console.log(`Received POST request for Device_Config:`, data);
+
+  const dateTime = new Date().toISOString();
+
+  if (data.type === 'Device_Config') {
+    console.log(`Device_Config mode: Handling device configuration data`, data);
+
+    // Store device configuration data in the database
+    try {
+      await pool.query(
+        `INSERT INTO device_configs (
+          client_name, 
+          ram_total, 
+          ram_used, 
+          storage_total, 
+          storage_used, 
+          resolution, 
+          downstream_bandwidth, 
+          upstream_bandwidth, 
+          manufacturer, 
+          model, 
+          os_version, 
+          wifi_enabled, 
+          wifi_mac_address, 
+          wifi_network_ssid, 
+          wifi_signal_strength_dbm, 
+          android_id, 
+          IfSecondScreenIsPresentOnDevice, 
+          updated_at
+        ) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) 
+        ON CONFLICT (client_name) 
+        DO UPDATE SET 
+          ram_total = EXCLUDED.ram_total, 
+          ram_used = EXCLUDED.ram_used, 
+          storage_total = EXCLUDED.storage_total, 
+          storage_used = EXCLUDED.storage_used, 
+          resolution = EXCLUDED.resolution, 
+          downstream_bandwidth = EXCLUDED.downstream_bandwidth, 
+          upstream_bandwidth = EXCLUDED.upstream_bandwidth, 
+          manufacturer = EXCLUDED.manufacturer, 
+          model = EXCLUDED.model, 
+          os_version = EXCLUDED.os_version, 
+          wifi_enabled = EXCLUDED.wifi_enabled, 
+          wifi_mac_address = EXCLUDED.wifi_mac_address, 
+          wifi_network_ssid = EXCLUDED.wifi_network_ssid, 
+          wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, 
+          android_id = EXCLUDED.android_id, 
+          IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, 
+          updated_at = EXCLUDED.updated_at`,
+        [
+          data.clientId, // Assuming this corresponds to client_name
+          data.ram_total,
+          data.ram_used,
+          data.storage_total,
+          data.storage_used,
+          data['Screen-resolution'], // Ensure this matches the payload
+          data.downstream_bandwidth,
+          data.upstream_bandwidth,
+          data.manufacturer,
+          data.model,
+          data.os_version,
+          data.wifiEnabled, // Boolean
+          data.wifiMacAddress,
+          data.wifiNetworkSSID,
+          data.wifiSignalStrengthdBm, // Integer or float
+          data.androidId,
+          data.IfSecondScreenIsPresentOnDevice, // Assuming integer
+          dateTime, // updated_at field
+        ]
+      );
+
+      console.log(`Device configuration updated in the database for client ${data.clientId} at ${dateTime}`);
+      res.status(200).json({ message: 'Device configuration updated successfully' });
+    } catch (error) {
+      console.error(`Failed to update device configuration in the database:`, error);
+      res.status(500).json({ error: 'Failed to update device configuration' });
+    }
+  } else {
+    res.status(400).json({ error: 'Invalid message type' });
+  }
+});
+
+
 
 
 
