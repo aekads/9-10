@@ -143,7 +143,7 @@ ws.on('message', async (message) => {
 
 
 
-app.post('/device-config/:id', async (req, res) => {
+app.post('/get-device-config/:id', async (req, res) => {
   const data = req.body; // Assuming the device config data is sent in the body
 
   console.log(`Received POST request for Device_Config:`, data);
