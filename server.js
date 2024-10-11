@@ -62,9 +62,8 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
+// Handle network messages
 ws.on('message', async (message) => {
-  console.log(`Received message from ${clientId}: ${message}`);
-
   let data;
   try {
     data = JSON.parse(message);
@@ -91,7 +90,26 @@ ws.on('message', async (message) => {
     } catch (error) {
       console.error(`Failed to update network status in database:`, error);
     }
-  } if (data.type === 'Device_Config') {
+  } else {
+    console.log(`Received non-network data:`, data);
+  }
+});
+
+// Handle Device_Config messages
+ws.on('message', async (message) => {
+  let data;
+  try {
+    data = JSON.parse(message);
+  } catch (error) {
+    console.error(`Failed to parse message: ${message}`, error);
+    return; // Exit early if message parsing fails
+  }
+
+  console.log(`Parsed data from message:`, data);
+
+  const dateTime = new Date().toISOString(); // Updated format
+
+  if (data.type === 'Device_Config') {
     console.log(`Device configuration data received:`, data);
 
     // Store device configuration data in the database
@@ -107,7 +125,6 @@ ws.on('message', async (message) => {
           data['Screen-resolution'],
           data.downstream_bandwidth,
           data.upstream_bandwidth,
-
           data.manufacturer,
           data.model,
           data.os_version,
@@ -126,9 +143,10 @@ ws.on('message', async (message) => {
       console.error(`Failed to update device configuration in database:`, error);
     }
   } else {
-    console.log(`Received non-network and non-Device_Config data:`, data);
+    console.log(`Received non-Device_Config data:`, data);
   }
 });
+
 
 
 
