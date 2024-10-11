@@ -483,30 +483,3 @@ setInterval(() => {
 
 
 
-
-
-
-app.get('/dhvanil', async (req, res) => {
-  // Retrieve client statuses from the database
-  const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
-  const screensResult = await pool.query('SELECT * FROM screens');
-// Extract screen data from the result
-const screens = screensResult.rows;
-// console.log("screens",screens);
-
-  const clientStatuses = {};
-  clientStatusResult.rows.forEach(row => {
-    clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-  });
-
-  // Retrieve network statuses from the database
-  const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
-  const networkStatuses = {};
-  networkStatusResult.rows.forEach(row => {
-    networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-  });
-
-
-  console.log('Rendering status page with client and network data');
-  res.render('status', { clientStatuses, networkStatuses, screens});
-});
