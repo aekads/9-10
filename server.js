@@ -359,7 +359,17 @@ app.post('/screen-sort/:id', (req, res) => {
   }
 });
 
+app.post('/Dhvanil/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
 
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UN_MUTE', message: 'Unmute client' }));
+    res.json({ message: `Unmute command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
 
 
 app.post('/delete-client/:id', async (req, res) => {
@@ -387,6 +397,7 @@ app.post('/delete-client/:id', async (req, res) => {
 
 
 
+
 app.post('/master-restart', (req, res) => {
   const clientIds = Object.keys(clients);
   const restartMessage = { type: 'RESTART', message: 'restart app' };
@@ -403,51 +414,49 @@ app.post('/master-restart', (req, res) => {
 });
 
 
-
-
-app.post('/send-dhvanil-command/:clientId', (req, res) => {
-  const clientId = req.params.clientId;
+// app.post('/send-dhvanil-command/:clientId', (req, res) => {
+//   const clientId = req.params.clientId;
   
-  // Send command to the client (details depend on your communication with the client)
-  sendCommandToClient(clientId, 'Dhvanil', (clientData) => {
-    if (clientData) {
-      res.json({
-        filename: clientData.filename,
-        image: clientData.image,
-        size: clientData.size
-      });
-    } else {
-      res.status(500).json({ message: 'Failed to get data from the client' });
-    }
-  });
-});
+//   // Send command to the client (details depend on your communication with the client)
+//   sendCommandToClient(clientId, 'Dhvanil', (clientData) => {
+//     if (clientData) {
+//       res.json({
+//         filename: clientData.filename,
+//         image: clientData.image,
+//         size: clientData.size
+//       });
+//     } else {
+//       res.status(500).json({ message: 'Failed to get data from the client' });
+//     }
+//   });
+// });
 
-app.post('/save-dhvanil-data', (req, res) => {
-  const { type, filename, image, size, Id } = req.body;
+// app.post('/save-dhvanil-data', (req, res) => {
+//   const { type, filename, image, size, Id } = req.body;
 
-  // Replace this with your actual PostgreSQL query
-  const query = `
-    INSERT INTO dhvanil_data (type, filename, image, size, client_id)
-    VALUES ($1, $2, $3, $4, $5)
-    ON CONFLICT (client_id) 
-    DO UPDATE SET 
-      type = EXCLUDED.type, 
-      filename = EXCLUDED.filename, 
-      image = EXCLUDED.image, 
-      size = EXCLUDED.size;
-  `;
+//   // Replace this with your actual PostgreSQL query
+//   const query = `
+//     INSERT INTO dhvanil_data (type, filename, image, size, client_id)
+//     VALUES ($1, $2, $3, $4, $5)
+//     ON CONFLICT (client_id) 
+//     DO UPDATE SET 
+//       type = EXCLUDED.type, 
+//       filename = EXCLUDED.filename, 
+//       image = EXCLUDED.image, 
+//       size = EXCLUDED.size;
+//   `;
 
-  const values = [type, filename, image, size, Id];
+//   const values = [type, filename, image, size, Id];
 
-  db.query(query, values, (error, result) => {
-    if (error) {
-      console.error('Error saving data:', error);
-      res.status(500).json({ message: 'Error saving data' });
-    } else {
-      res.json({ message: 'Data saved successfully' });
-    }
-  });
-});
+//   db.query(query, values, (error, result) => {
+//     if (error) {
+//       console.error('Error saving data:', error);
+//       res.status(500).json({ message: 'Error saving data' });
+//     } else {
+//       res.json({ message: 'Data saved successfully' });
+//     }
+//   });
+// });
 
 
 
