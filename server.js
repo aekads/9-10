@@ -62,8 +62,9 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
-// Handle network messages
 ws.on('message', async (message) => {
+  console.log(`Received message from ${clientId}: ${message}`);
+
   let data;
   try {
     data = JSON.parse(message);
@@ -90,26 +91,7 @@ ws.on('message', async (message) => {
     } catch (error) {
       console.error(`Failed to update network status in database:`, error);
     }
-  } else {
-    console.log(`Received non-network data:`, data);
-  }
-});
-
-// Handle Device_Config messages
-ws.on('message', async (message) => {
-  let data;
-  try {
-    data = JSON.parse(message);
-  } catch (error) {
-    console.error(`Failed to parse message: ${message}`, error);
-    return; // Exit early if message parsing fails
-  }
-
-  console.log(`Parsed data from message:`, data);
-
-  const dateTime = new Date().toISOString(); // Updated format
-
-  if (data.type === 'Device_Config') {
+  } if (data.type === 'Device_Config') {
     console.log(`Device configuration data received:`, data);
 
     // Store device configuration data in the database
@@ -125,6 +107,7 @@ ws.on('message', async (message) => {
           data['Screen-resolution'],
           data.downstream_bandwidth,
           data.upstream_bandwidth,
+
           data.manufacturer,
           data.model,
           data.os_version,
@@ -143,10 +126,9 @@ ws.on('message', async (message) => {
       console.error(`Failed to update device configuration in database:`, error);
     }
   } else {
-    console.log(`Received non-Device_Config data:`, data);
+    console.log(`Received non-network and non-Device_Config data:`, data);
   }
 });
-
 
 
 
@@ -423,6 +405,49 @@ app.post('/master-restart', (req, res) => {
 
 
 
+app.post('/send-dhvanil-command/:clientId', (req, res) => {
+  const clientId = req.params.clientId;
+  
+  // Send command to the client (details depend on your communication with the client)
+  sendCommandToClient(clientId, 'Dhvanil', (clientData) => {
+    if (clientData) {
+      res.json({
+        filename: clientData.filename,
+        image: clientData.image,
+        size: clientData.size
+      });
+    } else {
+      res.status(500).json({ message: 'Failed to get data from the client' });
+    }
+  });
+});
+
+app.post('/save-dhvanil-data', (req, res) => {
+  const { type, filename, image, size, Id } = req.body;
+
+  // Replace this with your actual PostgreSQL query
+  const query = `
+    INSERT INTO dhvanil_data (type, filename, image, size, client_id)
+    VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (client_id) 
+    DO UPDATE SET 
+      type = EXCLUDED.type, 
+      filename = EXCLUDED.filename, 
+      image = EXCLUDED.image, 
+      size = EXCLUDED.size;
+  `;
+
+  const values = [type, filename, image, size, Id];
+
+  db.query(query, values, (error, result) => {
+    if (error) {
+      console.error('Error saving data:', error);
+      res.status(500).json({ message: 'Error saving data' });
+    } else {
+      res.json({ message: 'Data saved successfully' });
+    }
+  });
+});
 
 
 
@@ -483,3 +508,30 @@ setInterval(() => {
 
 
 
+
+
+
+app.get('/dhvanil', async (req, res) => {
+  // Retrieve client statuses from the database
+  const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
+  const screensResult = await pool.query('SELECT * FROM screens');
+// Extract screen data from the result
+const screens = screensResult.rows;
+// console.log("screens",screens);
+
+  const clientStatuses = {};
+  clientStatusResult.rows.forEach(row => {
+    clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+  });
+
+  // Retrieve network statuses from the database
+  const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
+  const networkStatuses = {};
+  networkStatusResult.rows.forEach(row => {
+    networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+  });
+
+
+  console.log('Rendering status page with client and network data');
+  res.render('status', { clientStatuses, networkStatuses, screens});
+});
