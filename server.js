@@ -364,8 +364,8 @@ app.post('/Dhvanil/:id', (req, res) => {
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'UN_MUTE', message: 'Unmute client' }));
-    res.json({ message: `Unmute command sent to client ${clientId}` });
+    ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    res.json({ message: `dhvanil command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
