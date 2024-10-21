@@ -39,6 +39,9 @@
             <td><%= screenshot.filename %></td>
             <td><a href="<%= screenshot.image_url %>" target="_blank">View Image</a></td>
             <td><%= screenshot.size %> bytes</td>
+              <button onclick="Dhvanil('<%= clientId %>')">Dhvanil</button>
+                <button onclick="rbt('<%= clientId %>')">sakirb</button>
+
           </tr>
         <% }); %>
       <% } else { %>
@@ -48,5 +51,79 @@
       <% } %>
     </tbody>
   </table>
+
+
+
+
+
+  <script>
+  
+
+    function Dhvanil(clientId) {
+      fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+
+
+
+
+
+
+
+
+    function rbt(clientId) {
+      fetch(`/rbt/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+  </script>
 </body>
 </html>
