@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenshots</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Screenshot Data</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Filename</th>
+        <th>Image URL</th>
+        <th>Size</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (screenshots.length > 0) { %>
+        <% screenshots.forEach((screenshot) => { %>
+          <tr>
+            <td><%= screenshot.id %></td>
+            <td><%= screenshot.type %></td>
+            <td><%= screenshot.filename %></td>
+            <td><a href="<%= screenshot.image_url %>" target="_blank">View Image</a></td>
+            <td><%= screenshot.size %> bytes</td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr>
+          <td colspan="5">No data available</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</body>
+</html>
