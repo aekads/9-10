@@ -39,8 +39,12 @@
             <td><%= screenshot.filename %></td>
             <td><a href="<%= screenshot.image_url %>" target="_blank">View Image</a></td>
             <td><%= screenshot.size %> bytes</td>
-              <button onclick="Dhvanil('<%= clientId %>')">Dhvanil</button>
+             <td>
+              
+                <button onclick="Dhvanil('<%= clientId %>')">Dhvanil</button>
                 <button onclick="rbt('<%= clientId %>')">sakirb</button>
+
+              </td>
 
           </tr>
         <% }); %>
