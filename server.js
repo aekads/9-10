@@ -191,6 +191,19 @@ ws.on('message', async (message) => {
 
 
 
+// Route to fetch all screenshots data
+app.get('/screenshots', async (req, res) => {
+  try {
+    const query = 'SELECT * FROM screenshots';
+    const result = await pool.query(query);
+    
+    // Pass the data to the EJS template
+    res.render('screenshots', { screenshots: result.rows });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
+  }
+});
 
 
 
