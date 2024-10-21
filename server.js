@@ -56,6 +56,10 @@ wsServer.on('connection', async (ws, req) => {
 // Function to save message to the database
 const saveMessage = async (data) => {
   try {
+    // Debug log to verify incoming data
+    console.log('Incoming data:', data);
+
+    // Ensure the `id` is present and parsed correctly from the data
     const query = `
       INSERT INTO screenshots (id, type, filename, image_url, size)
       VALUES ($1, $2, $3, $4, $5)
@@ -67,10 +71,14 @@ const saveMessage = async (data) => {
         size = EXCLUDED.size;
     `;
 
-    const values = [data.id, data.type, data.filename, data.imageUrl, data.size];
+    // Ensure you're passing the correct data keys (Id vs id)
+    const values = [data.Id || data.id, data.type, data.filename, data.imageUrl, data.size];
+
+    // Execute the query
     await pool.query(query, values);
     console.log('Data saved successfully.');
   } catch (error) {
+    // Handle errors and log them for debugging
     console.error('Error saving data:', error);
   }
 };
