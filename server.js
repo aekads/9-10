@@ -53,12 +53,48 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
+// Function to save message to the database
+const saveMessage = async (data) => {
+  try {
+    const query = `
+      INSERT INTO screenshots (id, type, filename, image_url, size)
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT (id)
+      DO UPDATE SET 
+        type = EXCLUDED.type,
+        filename = EXCLUDED.filename,
+        image_url = EXCLUDED.image_url,
+        size = EXCLUDED.size;
+    `;
+
+    const values = [data.id, data.type, data.filename, data.imageUrl, data.size];
+    await pool.query(query, values);
+    console.log('Data saved successfully.');
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+};
 
 
 
 
 
+  ws.on('message', (message) => {
+    try {
+      // Parse the received message
+      const parsedMessage = JSON.parse(message);
+      console.log('Received message:', parsedMessage);
 
+      // Save the parsed message to the database
+      saveMessage(parsedMessage);
+
+      // Send a confirmation back to the client
+      ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully' }));
+    } catch (error) {
+      console.error('Error processing message:', error);
+      ws.send(JSON.stringify({ status: 'error', message: 'Failed to process message' }));
+    }
+  });
 
 
 
