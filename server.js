@@ -97,10 +97,10 @@ const saveMessage = async (data) => {
       saveMessage(parsedMessage);
 
       // Send a confirmation back to the client
-      ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully' }));
+    
     } catch (error) {
       console.error('Error processing message:', error);
-      ws.send(JSON.stringify({ status: 'error', message: 'Failed to process message' }));
+   
     }
   });
 
