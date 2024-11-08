@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Screenshots</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .online{
+      color: green;
+    }
+    .offline{
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Screen Name</th>
+        <th>Status</th>
+        <th>Type</th>
+        <th>Filename</th>
+        <th>Image URL</th>
+        <th>Size</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (screenshots.length > 0) { %>
+        <% screenshots.forEach((screenshot) => { %>
+          <tr>
+            <td><%= screenshot.id %></td>
+
+            <!-- Match screen name with screenshot's screen_id -->
+            <% const screen = screens.find(s => s.screenid === screenshot.id); %>
+            <td><%= screen ? screen.screenname : 'No screen available' %></td>
+
+            <!-- Match client status -->
+            <% const clientStatus = clientStatuses.find(cs => cs.client_name == screenshot.id); %>
+            <td class="<%= clientStatus.status %>">
+              <%= clientStatus ? clientStatus.status : 'No status available' %>
+            </td>
+            
+            <td><%= screenshot.type %></td>
+            <td><%= screenshot.filename %></td>
+            <td><a href="<%= screenshot.image_url %>" target="_blank">View Image</a></td>
+            <td><%= screenshot.size %> bytes</td>
+            <td>
+              <button onclick="Dhvanil('<%= screenshot.id %>')">Dhvanil</button>
+              <button onclick="rbt('<%= screenshot.id %>')">sakirb</button>
+              <button onclick="BRIGHTNESS_UP('<%= screenshot.id %>')">BRIGHTNESS UP</button>
+              <button onclick="BRIGHTNESS_DOWN('<%= screenshot.id %>')">BRIGHTNESS DOWN</button>
+              <button onclick="UPDATE_APP_SAKI('<%= screenshot.id %>')">UPDATE APP</button>
+              <button onclick="CLEAR_CODE_PARING_AND_SCREEN_ID('<%= screenshot.id %>')">Clear data</button>
+<button onclick="EXO_PLAYER_VOL_UP('<%= screenshot.id %>')">EXO UP</button>
+<button onclick="EXO_PLAYER_VOL_DOWN('<%= screenshot.id %>')">EXO DOWN</button>
+<button onclick="YOUTUBE_VOL_UP('<%= screenshot.id %>')">YOUTUBE UP</button>
+<button onclick="YOUTUBE_VOL_DOWN('<%= screenshot.id %>')">YOUTUBE DOWN</button>
+            </td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr>
+          <td colspan="8">No data available</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <script>
+    function Dhvanil(clientId) {
+      fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+
+    function rbt(clientId) {
+      fetch(`/rbt/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function BRIGHTNESS_UP(clientId) {
+      fetch(`/BRIGHTNESS_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function BRIGHTNESS_DOWN(clientId) {
+      fetch(`/BRIGHTNESS_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function UPDATE_APP_SAKI(clientId) {
+      fetch(`/UPDATE_APP_SAKI/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function CLEAR_CODE_PARING_AND_SCREEN_ID(clientId) {
+      fetch(`/CLEAR_CODE_PARING_AND_SCREEN_ID/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function EXO_PLAYER_VOL_UP(clientId) {
+      fetch(`/EXO_PLAYER_VOL_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function EXO_PLAYER_VOL_DOWN(clientId) {
+      fetch(`/EXO_PLAYER_VOL_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function YOUTUBE_VOL_UP(clientId) {
+      fetch(`/YOUTUBE_VOL_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+function YOUTUBE_VOL_DOWN(clientId) {
+      fetch(`/YOUTUBE_VOL_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>
