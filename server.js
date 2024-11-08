@@ -327,71 +327,25 @@ app.post('/restart-client/:id', (req, res) => {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+// app.post('/update-app/:id', (req, res) => {
+//   const clientId = req.params.id;
+//   const ws = clients[clientId];
 
-
-
-
-
-
-app.get('/restart-client/:id', (req, res) => {
-  const clientId = req.params.id;
-  const ws = clients[clientId];
-
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
-    res.json({ message: `Restart command sent to client ${clientId}` });
-  } else {
-    res.status(404).json({ message: `Client ${clientId} is not connected` });
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-app.post('/update-app/:id', (req, res) => {
-  const clientId = req.params.id;
-  const ws = clients[clientId];
-
- if (ws && ws.readyState === WebSocket.OPEN) {
-    const updateMessage = 'https://www.dropbox.com/scl/fi/t0st6degn19r0wexxb22v/AekApp2-9.apk?rlkey=vp0z6483rkpbc6dv6mnn6l5xs&st=v1hmqnvp&dl=1';
+//  if (ws && ws.readyState === WebSocket.OPEN) {
+//     const updateMessage = 'https://www.dropbox.com/scl/fi/t0st6degn19r0wexxb22v/AekApp2-9.apk?rlkey=vp0z6483rkpbc6dv6mnn6l5xs&st=v1hmqnvp&dl=1';
     
-    // Send the WebSocket message
-    ws.send(JSON.stringify({ type: 'UPDATE-APP_TO', message: updateMessage }));
+//     // Send the WebSocket message
+//     ws.send(JSON.stringify({ type: 'UPDATE-APP_TO', message: updateMessage }));
     
-    // Respond with the WebSocket message included in the JSON response
-    res.json({ 
-      message: `Update command sent to client ${clientId}`,
-      updateMessage: updateMessage 
-    });
-  } else {
-    res.status(404).json({ message: `Client ${clientId} is not connected` });
-  }
-});
+//     // Respond with the WebSocket message included in the JSON response
+//     res.json({ 
+//       message: `Update command sent to client ${clientId}`,
+//       updateMessage: updateMessage 
+//     });
+//   } else {
+//     res.status(404).json({ message: `Client ${clientId} is not connected` });
+//   }
+// });
 app.post('/volume-up/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
@@ -644,6 +598,265 @@ app.post('/master-restart', (req, res) => {
 
   res.json({ message: 'Restart command sent to all connected clients' });
 });
+
+
+
+
+
+
+
+
+
+app.get('/restart-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
+    res.json({ message: `Restart command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+app.get('/volume-up/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'VOLUME_UP', message: 'Increase volume' }));
+    res.json({ message: `Volume up command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/volume-down/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'VOLUME_DOWN', message: 'Decrease volume' }));
+    res.json({ message: `Volume down command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/mute-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'MUTE', message: 'Mute client' }));
+    res.json({ message: `Mute command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/unmute-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UN_MUTE', message: 'Unmute client' }));
+    res.json({ message: `Unmute command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/screen-sort/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SCREEN_SORT', message: 'Sort screens' }));
+    res.json({ message: `Screen sort command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/Dhvanil/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SAKI_SHOT', message: 'dhvanil client' }));
+    res.json({ message: `dhvanil command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/rbt/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    res.json({ message: `RBT command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/BRIGHTNESS_UP/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'BRIGHTNESS_UP', message: 'dhvanil client' }));
+    res.json({ message: `BRIGHTNESS UP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/BRIGHTNESS_DOWN/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'BRIGHTNESS_DOWN', message: 'dhvanil client' }));
+    res.json({ message: `BRIGHTNESS DOWN command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/UPDATE_APP_SAKI/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'dhvanil client' }));
+    res.json({ message: `UPDATE APP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'CLEAR_CODE_PARING_AND_SCREEN_ID', message: 'dhvanil client' }));
+    res.json({ message: `CLEAR DATA command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/EXO_PLAYER_VOL_UP/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_UP', message: 'dhvanil client' }));
+    res.json({ message: `EXO_PLAYER_VOL_UP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/EXO_PLAYER_VOL_DOWN/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_DOWN', message: 'dhvanil client' }));
+    res.json({ message: `EXO_PLAYER_VOL_DOWN command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/YOUTUBE_VOL_UP/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'YOUTUBE_VOL_UP', message: 'dhvanil client' }));
+    res.json({ message: `YOUTUBE_VOL_UP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'YOUTUBE_VOL_DOWN', message: 'dhvanil client' }));
+    res.json({ message: `YOUTUBE_VOL_DOWN command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+app.get('/delete-client/:id', async (req, res) => {
+  const clientId = req.params.id;
+
+  try {
+    const deleteQuery = 'DELETE FROM client_statuses WHERE client_name = $1';
+    await pool.query(deleteQuery, [clientId]);
+    res.status(200).send({ message: 'Client deleted successfully.' });
+  } catch (err) {
+    console.error('Error deleting client:', err);
+    res.status(500).send({ error: 'Failed to delete client.' });
+  }
+});
+
+app.get('/master-restart', (req, res) => {
+  const clientIds = Object.keys(clients);
+  const restartMessage = { type: 'RESTART', message: 'restart app' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(restartMessage));
+      console.log(`Restart command sent to client ${clientId}`);
+    }
+  });
+
+  res.json({ message: 'Restart command sent to all connected clients' });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // app.post('/send-dhvanil-command/:clientId', (req, res) => {
