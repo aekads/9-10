@@ -327,6 +327,52 @@ app.post('/restart-client/:id', (req, res) => {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+
+
+
+
+
+app.get('/restart-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
+    res.json({ message: `Restart command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.post('/update-app/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
