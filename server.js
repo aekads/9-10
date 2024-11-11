@@ -316,17 +316,50 @@ const screens = screensResult.rows;
   res.render('status', { clientStatuses, networkStatuses, screens});
 });
 
+const nodemailer = require('nodemailer');
+
+// Create a Nodemailer transporter (using Gmail as an example)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'pd14030304@gmail.com', // Replace with your email
+    pass: 'dhvanil2004@'   // Replace with your email password or app-specific password
+  }
+});
+
 app.post('/restart-client/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'RESTART' , message: 'restart app'  }));
+    // Send the WebSocket message
+    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
+    
+    // Email content
+    const mailOptions = {
+      from: 'pd14030304@gmail.com', // Sender address
+      to: 'dhvanil1403@gmail.com', // Recipient address
+      subject: `Restart Command Sent to Client ${clientId}`,
+      text: `The restart command has been successfully sent to client ${clientId}.`,
+      html: `<p>The restart command has been successfully sent to client <strong>${clientId}</strong>.</p>`
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(`Error sending email: ${error}`);
+      } else {
+        console.log(`Email sent: ${info.response}`);
+      }
+    });
+
+    // Send response to the client
     res.json({ message: `Restart command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
 // app.post('/update-app/:id', (req, res) => {
 //   const clientId = req.params.id;
 //   const ws = clients[clientId];
