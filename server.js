@@ -297,6 +297,57 @@ app.get('/client/:id', async (req, res) => {
 
 
 
+let isAuthenticated = false; // Simple flag for authentication
+
+// Middleware to check access
+const checkAccess = (req, res, next) => {
+  console.log("Middleware: In checkAccess");
+
+  if (isAuthenticated) {
+    console.log("Middleware: User is already authenticated");
+    return next(); // Proceed if the user is authenticated
+  }
+
+  const { username, password } = req.body;
+  console.log(`Middleware: Received credentials -> username: ${username}, password: ${password}`);
+
+  // Array of valid credentials
+  const validCredentials = [
+    { username: 'dhvanil', password: 'dhvanil1403@' },
+    { username: 'sahas', password: '1248163264' }
+  ];
+
+  // Check if the provided credentials match any valid ones
+  const isValidUser = validCredentials.some(cred => 
+    cred.username === username && cred.password === password
+  );
+
+  if (isValidUser) {
+    isAuthenticated = true; // Mark user as authenticated
+    console.log("Middleware: Authentication successful");
+    next();
+  } else {
+    console.log("Middleware: Authentication failed");
+    res.status(401).send('Unauthorized');
+  }
+};
+
+// Route to render the login page
+app.get('/access', (req, res) => {
+  console.log("GET /access: Rendering login page");
+  res.render('access'); // Render the login page (access.ejs)
+});
+
+// Route to handle form submission for access (login)
+app.post('/access', checkAccess, (req, res) => {
+  console.log("POST /access: Login form submitted");
+  res.redirect('/screenshots'); // Redirect to /screenshots after successful login
+});
+
+
+
+
+
 
 
 
@@ -1023,54 +1074,6 @@ app.get('/master-restart', (req, res) => {
 
 
 
-
-
-let isAuthenticated = false; // Simple flag for authentication
-
-// Middleware to check access
-const checkAccess = (req, res, next) => {
-  console.log("Middleware: In checkAccess");
-
-  if (isAuthenticated) {
-    console.log("Middleware: User is already authenticated");
-    return next(); // Proceed if the user is authenticated
-  }
-
-  const { username, password } = req.body;
-  console.log(`Middleware: Received credentials -> username: ${username}, password: ${password}`);
-
-  // Array of valid credentials
-  const validCredentials = [
-    { username: 'dhvanil', password: 'dhvanil1403@' },
-    { username: 'sahas', password: '1248163264' }
-  ];
-
-  // Check if the provided credentials match any valid ones
-  const isValidUser = validCredentials.some(cred => 
-    cred.username === username && cred.password === password
-  );
-
-  if (isValidUser) {
-    isAuthenticated = true; // Mark user as authenticated
-    console.log("Middleware: Authentication successful");
-    next();
-  } else {
-    console.log("Middleware: Authentication failed");
-    res.status(401).send('Unauthorized');
-  }
-};
-
-// Route to render the login page
-app.get('/access', (req, res) => {
-  console.log("GET /access: Rendering login page");
-  res.render('access'); // Render the login page (access.ejs)
-});
-
-// Route to handle form submission for access (login)
-app.post('/access', checkAccess, (req, res) => {
-  console.log("POST /access: Login form submitted");
-  res.redirect('/screenshots'); // Redirect to /screenshots after successful login
-});
 
 // // Route to fetch all screenshots data
 // app.get('/screenshots', (req, res) => {
