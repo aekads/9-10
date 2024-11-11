@@ -384,6 +384,15 @@ app.post('/volume-up/:id', (req, res) => {
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'VOLUME_UP', message: 'Increase volume' }));
+    
+    // Send the email
+    transporter.sendMail(mailOptions(clientId), (error, info) => {
+      if (error) {
+        return res.status(500).json({ message: 'Error sending email', error: error.message });
+      }
+      console.log('Email sent: ' + info.response);
+    });
+    
     res.json({ message: `Volume up command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
