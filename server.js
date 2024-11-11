@@ -345,14 +345,18 @@ app.post('/access', checkAccess, (req, res) => {
 });
 
 
-
+// GET route for /screenshots to render the status page
+app.get('/status', checkAccess, (req, res) => {
+  console.log("GET /screenshots: Rendering status page");
+  res.render('status'); // Render the 'status' page (status.ejs)
+});
 
 
 
 
 
 // Route to render the status page with authentication
-app.get('/status', checkAccess, async (req, res) => {
+app.post('/status', checkAccess, async (req, res) => {
   console.log("GET /status: User is trying to access status");
 
   if (!isAuthenticated) {
