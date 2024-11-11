@@ -292,30 +292,80 @@ app.get('/client/:id', async (req, res) => {
   res.render('client', { clientId });
 });
 
-app.get('/status', async (req, res) => {
-  // Retrieve client statuses from the database
-  const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
-  const screensResult = await pool.query('SELECT * FROM screens');
-// Extract screen data from the result
-const screens = screensResult.rows;
-// console.log("screens",screens);
-
-  const clientStatuses = {};
-  clientStatusResult.rows.forEach(row => {
-    clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-  });
-
-  // Retrieve network statuses from the database
-  const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
-  const networkStatuses = {};
-  networkStatusResult.rows.forEach(row => {
-    networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-  });
 
 
-  console.log('Rendering status page with client and network data');
-  res.render('status', { clientStatuses, networkStatuses, screens});
+
+
+
+
+
+
+// Route to render the status page with authentication
+app.get('/status', checkAccess, async (req, res) => {
+  console.log("GET /status: User is trying to access status");
+
+  if (!isAuthenticated) {
+    console.log("GET /status: User is not authenticated, redirecting to /access");
+    return res.redirect('/access'); // Redirect to access page if not authenticated
+  }
+
+  console.log("GET /status: User is authenticated, fetching client statuses and network data");
+
+  try {
+    // Retrieve client statuses from the database
+    const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
+    const screensResult = await pool.query('SELECT * FROM screens');
+
+    // Extract screen data from the result
+    const screens = screensResult.rows;
+    const clientStatuses = {};
+    clientStatusResult.rows.forEach(row => {
+      clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+    });
+
+    // Retrieve network statuses from the database
+    const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
+    const networkStatuses = {};
+    networkStatusResult.rows.forEach(row => {
+      networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+    });
+
+    console.log('Rendering status page with client and network data');
+    res.render('status', { clientStatuses, networkStatuses, screens });
+  } catch (error) {
+    console.error("Error fetching data from the database:", error);
+    res.status(500).send('Error fetching data');
+  }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
