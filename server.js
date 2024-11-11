@@ -337,7 +337,7 @@ app.post('/restart-client/:id', (req, res) => {
     // Email content
     const mailOptions = {
       from: 'aekads.otp@gmail.com', // Sender address
-      to: 'dhvanil1403@gmail.com','sahaskumbhani221@gmail.com', // Recipient address
+      to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient address
       subject: `Restart Command Sent to Client ${clientId}`,
       text: `The restart command has been successfully sent to client ${clientId}.`,
       html: `<p>The restart command has been successfully sent to client <strong>${clientId}</strong>.</p>`
