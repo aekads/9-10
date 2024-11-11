@@ -337,7 +337,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = (clientId, action) => {
   const mailOptions = {
     from: 'aekads.otp@gmail.com',
-    to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient emails
+    to: 'sahasaek221@gmail.com', // Recipient emails
     subject: `${action} Command Sent to Client ${clientId}`,
     text: `The ${action} command has been successfully sent to client ${clientId}.`,
     html: `<p>The ${action} command has been successfully sent to client <strong>${clientId}</strong>.</p>`
