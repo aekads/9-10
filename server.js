@@ -321,8 +321,8 @@ const screens = screensResult.rows;
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'pd14030304@gmail.com', // Replace with your email
-    pass: 'dhvanil2004@'   // Replace with your email password or app-specific password
+        user: 'aekads.otp@gmail.com',
+        pass: 'ntkp cloo wjnx atep'
   }
 });
 
@@ -336,7 +336,7 @@ app.post('/restart-client/:id', (req, res) => {
     
     // Email content
     const mailOptions = {
-      from: 'pd14030304@gmail.com', // Sender address
+      from: 'aekads.otp@gmail.com', // Sender address
       to: 'dhvanil1403@gmail.com', // Recipient address
       subject: `Restart Command Sent to Client ${clientId}`,
       text: `The restart command has been successfully sent to client ${clientId}.`,
