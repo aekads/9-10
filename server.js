@@ -610,6 +610,8 @@ app.post('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
 
 
 
+
+// Route to delete a client
 app.post('/delete-client/:id', async (req, res) => {
   const clientId = req.params.id;
 
@@ -618,7 +620,9 @@ app.post('/delete-client/:id', async (req, res) => {
     const deleteQuery = 'DELETE FROM client_statuses WHERE client_name = $1';
     await pool.query(deleteQuery, [clientId]);
 
-    // Optionally send a success response
+    // Send an email after client deletion
+    sendEmail('Client Deletion', `Client ${clientId} has been deleted from the system.`);
+
     res.status(200).send({ message: 'Client deleted successfully.' });
   } catch (err) {
     console.error('Error deleting client:', err);
@@ -626,16 +630,7 @@ app.post('/delete-client/:id', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
+// Route to perform master restart on all connected clients
 app.post('/master-restart', (req, res) => {
   const clientIds = Object.keys(clients);
   const restartMessage = { type: 'RESTART', message: 'restart app' };
@@ -647,6 +642,9 @@ app.post('/master-restart', (req, res) => {
       console.log(`Restart command sent to client ${clientId}`);
     }
   });
+
+  // Send an email after master restart command
+  sendEmail('Master Restart', 'The master restart command has been sent to all connected clients.');
 
   res.json({ message: 'Restart command sent to all connected clients' });
 });
@@ -725,6 +723,245 @@ setInterval(() => {
 
 
 
+
+
+// Restart client command
+app.get('/restart-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
+    sendEmail(clientId, 'RESTART');
+    res.json({ message: `Restart command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Volume up command
+app.get('/volume-up/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'VOLUME_UP', message: 'Increase volume' }));
+    sendEmail(clientId, 'VOLUME_UP');
+    res.json({ message: `Volume up command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Volume down command
+app.get('/volume-down/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'VOLUME_DOWN', message: 'Decrease volume' }));
+    sendEmail(clientId, 'VOLUME_DOWN');
+    res.json({ message: `Volume down command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Mute client command
+app.get('/mute-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'MUTE', message: 'Mute client' }));
+    sendEmail(clientId, 'MUTE');
+    res.json({ message: `Mute command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Unmute client command
+app.get('/unmute-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UN_MUTE', message: 'Unmute client' }));
+    sendEmail(clientId, 'UN_MUTE');
+    res.json({ message: `Unmute command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Screen sort command
+app.get('/screen-sort/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SCREEN_SORT', message: 'Sort screens' }));
+    sendEmail(clientId, 'SCREEN_SORT');
+    res.json({ message: `Screen sort command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Dhvanil command
+app.get('/Dhvanil/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SAKI_SHOT', message: 'dhvanil client' }));
+    sendEmail(clientId, 'SAKI_SHOT');
+    res.json({ message: `dhvanil command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// RBT command
+app.get('/rbt/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    sendEmail(clientId, 'SAKI_RBT');
+    res.json({ message: `RBT command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Brightness up command
+app.get('/BRIGHTNESS_UP/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'BRIGHTNESS_UP', message: 'dhvanil client' }));
+    sendEmail(clientId, 'BRIGHTNESS_UP');
+    res.json({ message: `BRIGHTNESS UP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Brightness down command
+app.get('/BRIGHTNESS_DOWN/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'BRIGHTNESS_DOWN', message: 'dhvanil client' }));
+    sendEmail(clientId, 'BRIGHTNESS_DOWN');
+    res.json({ message: `BRIGHTNESS DOWN command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Update app Saki command
+app.get('/UPDATE_APP_SAKI/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'dhvanil client' }));
+    sendEmail(clientId, 'UPDATE_APP_SAKI');
+    res.json({ message: `UPDATE APP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// Clear pairing and screen ID command
+app.get('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'CLEAR_CODE_PARING_AND_SCREEN_ID', message: 'dhvanil client' }));
+    sendEmail(clientId, 'CLEAR_CODE_PARING_AND_SCREEN_ID');
+    res.json({ message: `CLEAR DATA command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// EXO_PLAYER_VOL_UP command
+app.get('/EXO_PLAYER_VOL_UP/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_UP', message: 'dhvanil client' }));
+    sendEmail(clientId, 'EXO_PLAYER_VOL_UP');
+    res.json({ message: `EXO_PLAYER_VOL_UP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+// EXO_PLAYER_VOL_DOWN command
+app.get('/EXO_PLAYER_VOL_DOWN/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_DOWN', message: 'dhvanil client' }));
+    sendEmail(clientId, 'EXO_PLAYER_VOL_DOWN');
+    res.json({ message: `EXO_PLAYER_VOL_DOWN command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+
+// Route to delete a client
+app.get('/delete-client/:id', async (req, res) => {
+  const clientId = req.params.id;
+
+  try {
+    const deleteQuery = 'DELETE FROM client_statuses WHERE client_name = $1';
+    await pool.query(deleteQuery, [clientId]);
+
+    // Send an email after client deletion
+    sendEmail('Client Deletion', `Client ${clientId} has been deleted from the system.`);
+
+    res.status(200).send({ message: 'Client deleted successfully.' });
+  } catch (err) {
+    console.error('Error deleting client:', err);
+    res.status(500).send({ error: 'Failed to delete client.' });
+  }
+});
+
+// Route to perform master restart on all connected clients
+app.get('/master-restart', (req, res) => {
+  const clientIds = Object.keys(clients);
+  const restartMessage = { type: 'RESTART', message: 'restart app' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(restartMessage));
+      console.log(`Restart command sent to client ${clientId}`);
+    }
+  });
+
+  // Send an email after master restart command
+  sendEmail('Master Restart', 'The master restart command has been sent to all connected clients.');
+
+  res.json({ message: 'Restart command sent to all connected clients' });
+});
 
 
 
