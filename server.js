@@ -348,13 +348,15 @@ app.post('/access', checkAccess, (req, res) => {
 
 
 
+
+
 // Route to render the status page with authentication
-app.post('/status', checkAccess, async (req, res) => {
+app.get('/status', checkAccess, async (req, res) => {
   console.log("GET /status: User is trying to access status");
 
   if (!isAuthenticated) {
     console.log("GET /status: User is not authenticated, redirecting to /access");
-    return res.redirect('/status'); // Redirect to access page if not authenticated
+    return res.redirect('/access'); // Redirect to access page if not authenticated
   }
 
   console.log("GET /status: User is authenticated, fetching client statuses and network data");
@@ -385,6 +387,7 @@ app.post('/status', checkAccess, async (req, res) => {
     res.status(500).send('Error fetching data');
   }
 });
+
 
 
 
