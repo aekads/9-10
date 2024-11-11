@@ -317,6 +317,13 @@ const screens = screensResult.rows;
   res.render('status', { clientStatuses, networkStatuses, screens});
 });
 
+
+
+
+
+
+
+
 // Create a Nodemailer transporter (using Gmail as an example)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -326,210 +333,206 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Function to send an email when a command is issued
+const sendEmail = (clientId, action) => {
+  const mailOptions = {
+    from: 'aekads.otp@gmail.com',
+    to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient emails
+    subject: `${action} Command Sent to Client ${clientId}`,
+    text: `The ${action} command has been successfully sent to client ${clientId}.`,
+    html: `<p>The ${action} command has been successfully sent to client <strong>${clientId}</strong>.</p>`
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+    } else {
+      console.log('Email sent:', info.response);
+    }
+  });
+};
+
+// Restart command
 app.post('/restart-client/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    // Send the WebSocket message
-    ws.send(JSON.stringify({ type: 'RESTART', message: 'restart app' }));
-    
-    // Email content
-    const mailOptions = {
-      from: 'aekads.otp@gmail.com', // Sender address
-      to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient address
-      subject: `Restart Command Sent to Client ${clientId}`,
-      text: `The restart command has been successfully sent to client ${clientId}.`,
-      html: `<p>The restart command has been successfully sent to client <strong>${clientId}</strong>.</p>`
-    };
-
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(`Error sending email: ${error}`);
-      } else {
-        console.log(`Email sent: ${info.response}`);
-      }
-    });
-
-    // Send response to the client
+    ws.send(JSON.stringify({ type: 'RESTART', message: 'Restart app' }));
+    sendEmail(clientId, 'Restart');
     res.json({ message: `Restart command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
+// Update App command
 app.post('/update-app/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
- if (ws && ws.readyState === WebSocket.OPEN) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
     const updateMessage = 'https://www.dropbox.com/scl/fi/t0st6degn19r0wexxb22v/AekApp2-9.apk?rlkey=vp0z6483rkpbc6dv6mnn6l5xs&st=v1hmqnvp&dl=1';
-    
-    // Send the WebSocket message
     ws.send(JSON.stringify({ type: 'UPDATE-APP_TO', message: updateMessage }));
-    
-    // Respond with the WebSocket message included in the JSON response
-    res.json({ 
+    sendEmail(clientId, 'Update App');
+    res.json({
       message: `Update command sent to client ${clientId}`,
-      updateMessage: updateMessage 
+      updateMessage: updateMessage
     });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Volume Up command
 app.post('/volume-up/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'VOLUME_UP', message: 'Increase volume' }));
-    const mailOptions = (clientId) => ({
-  from: 'aekads.otp@gmail.com', // Sender address
-  to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient addresses
-  subject: `Volume Up Command Sent to Client ${clientId}`,
-  text: `The volume up command has been successfully sent to client ${clientId}.`,
-  html: `<p>The volume up command has been successfully sent to client <strong>${clientId}</strong>.</p>`
-});
-    // Send the email
-    transporter.sendMail(mailOptions(clientId), (error, info) => {
-      if (error) {
-        return res.status(500).json({ message: 'Error sending email', error: error.message });
-      }
-      console.log('Email sent: ' + info.response);
-    });
-    
+    sendEmail(clientId, 'Volume Up');
     res.json({ message: `Volume up command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
+// Volume Down command
 app.post('/volume-down/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'VOLUME_DOWN', message: 'Decrease volume' }));
+    sendEmail(clientId, 'Volume Down');
     res.json({ message: `Volume down command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Mute command
 app.post('/mute-client/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'MUTE', message: 'Mute client' }));
+    sendEmail(clientId, 'Mute');
     res.json({ message: `Mute command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
+// Unmute command
 app.post('/unmute-client/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'UN_MUTE', message: 'Unmute client' }));
+    sendEmail(clientId, 'Unmute');
     res.json({ message: `Unmute command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Screen Sort command
 app.post('/screen-sort/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'SCREEN_SORT', message: 'Sort screens' }));
+    sendEmail(clientId, 'Screen Sort');
     res.json({ message: `Screen sort command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
+// Dhvanil command
 app.post('/Dhvanil/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'SAKI_SHOT', message: 'dhvanil client' }));
-    res.json({ message: `dhvanil command sent to client ${clientId}` });
+    sendEmail(clientId, 'Dhvanil');
+    res.json({ message: `Dhvanil command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
-
-
-
-
-
-
-
-
+// RBT command
 app.post('/rbt/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'SAKI_RBT', message: 'dhvanil client' }));
+    sendEmail(clientId, 'RBT');
     res.json({ message: `RBT command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
 
-
-
-
-
-
-
-
+// Brightness Up command
 app.post('/BRIGHTNESS_UP/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'BRIGHTNESS_UP', message: 'dhvanil client' }));
-    res.json({ message: `BRIGHTNESS UP command sent to client ${clientId}` });
+    sendEmail(clientId, 'Brightness Up');
+    res.json({ message: `Brightness UP command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Brightness Down command
 app.post('/BRIGHTNESS_DOWN/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'BRIGHTNESS_DOWN', message: 'dhvanil client' }));
-    res.json({ message: `BRIGHTNESS DOWN command sent to client ${clientId}` });
+    sendEmail(clientId, 'Brightness Down');
+    res.json({ message: `Brightness DOWN command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Update App Saki command
 app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'dhvanil client' }));
+    sendEmail(clientId, 'Update App Saki');
     res.json({ message: `UPDATE APP command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// Clear Code Pairing command
 app.post('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'CLEAR_CODE_PARING_AND_SCREEN_ID', message: 'dhvanil client' }));
-    res.json({ message: `CLEAR DATA command sent to client ${clientId}` });
+    sendEmail(clientId, 'Clear Code Pairing');
+    res.json({ message: `Clear code pairing and screen ID command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
@@ -537,59 +540,61 @@ app.post('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
 
 
 
-
-
-
-
+// EXO_PLAYER_VOL_UP command
 app.post('/EXO_PLAYER_VOL_UP/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_UP', message: 'dhvanil client' }));
+    sendEmail(clientId, 'EXO_PLAYER_VOL_UP');
     res.json({ message: `EXO_PLAYER_VOL_UP command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// EXO_PLAYER_VOL_DOWN command
 app.post('/EXO_PLAYER_VOL_DOWN/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'EXO_PLAYER_VOL_DOWN', message: 'dhvanil client' }));
+    sendEmail(clientId, 'EXO_PLAYER_VOL_DOWN');
     res.json({ message: `EXO_PLAYER_VOL_DOWN command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// YOUTUBE_VOL_UP command
 app.post('/YOUTUBE_VOL_UP/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'YOUTUBE_VOL_UP', message: 'dhvanil client' }));
+    sendEmail(clientId, 'YOUTUBE_VOL_UP');
     res.json({ message: `YOUTUBE_VOL_UP command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
+
+// YOUTUBE_VOL_DOWN command
 app.post('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'YOUTUBE_VOL_DOWN', message: 'dhvanil client' }));
+    sendEmail(clientId, 'YOUTUBE_VOL_DOWN');
     res.json({ message: `YOUTUBE_VOL_DOWN command sent to client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
-
-
-
-
-
 
 
 
