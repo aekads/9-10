@@ -384,7 +384,13 @@ app.post('/volume-up/:id', (req, res) => {
 
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'VOLUME_UP', message: 'Increase volume' }));
-    
+    const mailOptions = (clientId) => ({
+  from: 'aekads.otp@gmail.com', // Sender address
+  to: 'dhvanil1403@gmail.com,sahaskumbhani221@gmail.com', // Recipient addresses
+  subject: `Volume Up Command Sent to Client ${clientId}`,
+  text: `The volume up command has been successfully sent to client ${clientId}.`,
+  html: `<p>The volume up command has been successfully sent to client <strong>${clientId}</strong>.</p>`
+});
     // Send the email
     transporter.sendMail(mailOptions(clientId), (error, info) => {
       if (error) {
