@@ -353,7 +353,7 @@ const screens = screensResult.rows;
 
 
    // Fetch volume data from the database (latest for each client)
-    const volumeData = await db.query(`
+    const volumeData = await pool.query(`
       SELECT client_id, volume FROM public.volume_changes 
       WHERE timestamp = (SELECT MAX(timestamp) FROM public.volume_changes WHERE client_id = volume_changes.client_id)
     `);
