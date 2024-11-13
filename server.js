@@ -639,41 +639,48 @@ app.post('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
 
 
 
-
-
 app.post('/set-volume/:id', async (req, res) => {
   const clientId = req.params.id;
   const volumeValue = req.body.volume; // Ensure body parsing middleware is used (e.g., express.json())
   const ws = clients[clientId];
+  const timestamp = new Date(); // Get the current timestamp
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-  // Send a JSON message with the volume value as part of the message string
-   ws.send(JSON.stringify({ type: 'SET_VOLUME', message: ` ${parseInt(volumeValue)}`, value: volumeValue }));
+    // Send a JSON message with the volume value as part of the message string
+    ws.send(JSON.stringify({ type: 'SET_VOLUME', message: `Set volume to ${parseInt(volumeValue)}`, value: volumeValue }));
 
-//     // Save or update the volume setting to the database (upsert)
     try {
-     const result = await pool.query(
-      `INSERT INTO volume_changes (client_id, volume, timestamp)
-       VALUES ($1, $2, $3)
-        ON CONFLICT (client_id) 
-        DO UPDATE SET volume = $2, timestamp = $3`,
-     [clientId, volumeValue, timestamp]
-      );
-      console.log('Volume change saved/updated in database:', result);
-   } catch (error) {
-     console.error('Error saving/updating volume change in database:', error);
-     return res.status(500).json({ message: 'Failed to save/update volume change' });
-   }
+      // Check if the client already has a record in the volume_changes table
+      const result = await pool.query('SELECT * FROM volume_changes WHERE client_id = $1', [clientId]);
 
-  // Optional: send an email notification when the volume is set
- sendEmail(clientId, `Volume set to ${volumeValue}`);
+      if (result.rows.length > 0) {
+        // If the record exists, update the volume value and timestamp
+        await pool.query(
+          'UPDATE volume_changes SET volume = $1, timestamp = $2 WHERE client_id = $3',
+          [volumeValue, timestamp, clientId]
+        );
+        console.log('Volume change updated for client:', clientId);
+      } else {
+        // If the record doesn't exist, insert a new record
+        await pool.query(
+          'INSERT INTO volume_changes (client_id, volume, timestamp) VALUES ($1, $2, $3)',
+          [clientId, volumeValue, timestamp]
+        );
+        console.log('Volume change saved to database for new client:', clientId);
+      }
 
-  res.json({ message: `Set volume command sent to client ${clientId} with value ${volumeValue}` });
- } else {
-   res.status(404).json({ message: `Client ${clientId} is not connected` });
+      // Optional: send an email notification when the volume is set
+      sendEmail(clientId, `Volume set to ${volumeValue}`);
+
+      res.json({ message: `Set volume command sent to client ${clientId} with value ${volumeValue}` });
+    } catch (error) {
+      console.error('Error saving volume change to database:', error);
+      return res.status(500).json({ message: 'Failed to save volume change' });
+    }
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
-
 
 
 
