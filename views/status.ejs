@@ -77,12 +77,11 @@
   id="volumeValue-<%= clientId %>"
   min="1"
   max="15"
-  value="<%= volumeValues[clientId] || 1 %>"  <!-- Set initial volume value from the database -->
+  value="<%= volumeValues[clientId] || 1 %>" <!-- Set initial volume value from the database -->
   oninput="updateVolumeDisplay(this, '<%= clientId %>')"
 >
 <span id="volumeDisplay-<%= clientId %>"><%= volumeValues[clientId] || 1 %></span> <!-- Initial volume display -->
 <button id="setVolumeButton-<%= clientId %>" onclick="setVolume('<%= clientId %>')">Set Volume</button>
-
 
 
 
@@ -136,7 +135,7 @@
 
 function updateVolumeDisplay(inputElement, clientId) {
   const volumeDisplay = document.getElementById(`volumeDisplay-${clientId}`);
-  volumeDisplay.innerText = inputElement.value; // Update the displayed volume value
+  volumeDisplay.innerText = inputElement.value; // Dynamically update the volume display text as the slider is moved
 }
 
 function setVolume(clientId) {
@@ -154,6 +153,7 @@ function setVolume(clientId) {
     alert('Please enter a volume value');
   }
 }
+
 
 
 
