@@ -70,18 +70,18 @@
               <td>
                 <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
                 <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-               <!-- Volume Slider for setting volume from 1 to 15 -->
-<label for="volumeValue-<%= clientId %>">Set Volume:</label>
+              <label for="volumeValue-<%= clientId %>">Set Volume:</label>
 <input
   type="range"
   id="volumeValue-<%= clientId %>"
   min="1"
   max="15"
-  value="1"  <!-- Default value -->
+  value="1"
   oninput="updateVolumeDisplay('<%= clientId %>')"
 >
 <span id="volumeDisplay-<%= clientId %>">1</span>
-<button onclick="setVolume('<%= clientId %>')">Set Volume</button>
+<button id="setVolumeButton-<%= clientId %>" onclick="setVolume('<%= clientId %>')">Set Volume</button>
+
 
               </td>
             </tr>
