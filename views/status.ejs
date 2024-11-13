@@ -76,11 +76,12 @@
   id="volumeValue-<%= clientId %>"
   min="1"
   max="15"
-  value="1"
-  oninput="updateVolumeDisplay(this, '<%= clientId %>')"
+  value="<%= volumeValue %>" <!-- Set initial volume value from the database -->
+  oninput="document.getElementById('volumeDisplay-<%= clientId %>').innerText = this.value"
 >
-<span id="volumeDisplay-<%= clientId %>">1</span>
+<span id="volumeDisplay-<%= clientId %>"><%= volumeValue %></span> <!-- Initial volume display -->
 <button id="setVolumeButton-<%= clientId %>" onclick="setVolume('<%= clientId %>')">Set Volume</button>
+
 
 
               </td>
