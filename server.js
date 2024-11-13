@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
 const { Pool } = require('pg');
+const session = require('express-session');
+
 
 const nodemailer = require('nodemailer');
 // Database connection setup
@@ -25,6 +27,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const clients = {};
 const statusClients = {};
+
+
+
+// Set up session middleware
+app.use(session({
+  secret: 'kinjal123@',
+  resave: false,
+  saveUninitialized: true
+}));
 
 // WebSocket server
 const wsServer = new WebSocket.Server({ noServer: true });
@@ -297,9 +308,10 @@ app.get('/client/:id', async (req, res) => {
 
 
 
+
 let isAuthenticated = false; // Simple flag for authentication
 
-// Middleware to check access
+// Middleware to check access and store the originally requested URL
 const checkAccess = (req, res, next) => {
   console.log("Middleware: In checkAccess");
 
@@ -308,115 +320,40 @@ const checkAccess = (req, res, next) => {
     return next(); // Proceed if the user is authenticated
   }
 
-  const { username, password } = req.body;
-  console.log(`Middleware: Received credentials -> username: ${username}, password: ${password}`);
-
-  // Array of valid credentials
-  const validCredentials = [
-    { username: 'dhvanil', password: 'dhvanil1403@' },
-    { username: 'sahas', password: '1248163264' }
-  ];
-
-  // Check if the provided credentials match any valid ones
-  const isValidUser = validCredentials.some(cred => 
-    cred.username === username && cred.password === password
-  );
-
-  if (isValidUser) {
-    isAuthenticated = true; // Mark user as authenticated
-    console.log("Middleware: Authentication successful");
-    next();
-  } else {
-    console.log("Middleware: Authentication failed");
-    res.status(401).send('Unauthorized');
-  }
+  // Store the requested URL in the session and redirect to login page
+  req.session.returnTo = req.originalUrl;
+  console.log(" req.session.returnTo..........", req.session.returnTo);
+  console.log("Middleware: User is not authenticated, redirecting to login");
+  res.redirect('/access'); // Redirect to login page if not authenticated
 };
 
-// Route to render the login page
-app.get('/access', (req, res) => {
-  console.log("GET /access: Rendering login page");
-  res.render('access'); // Render the login page (access.ejs)
+
+
+
+app.get('/status', checkAccess,async (req, res) => {
+  // Retrieve client statuses from the database
+  const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
+  const screensResult = await pool.query('SELECT * FROM screens');
+// Extract screen data from the result
+const screens = screensResult.rows;
+// console.log("screens",screens);
+
+  const clientStatuses = {};
+  clientStatusResult.rows.forEach(row => {
+    clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+  });
+
+  // Retrieve network statuses from the database
+  const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
+  const networkStatuses = {};
+  networkStatusResult.rows.forEach(row => {
+    networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
+  });
+
+
+  console.log('Rendering status page with client and network data');
+  res.render('status', { clientStatuses, networkStatuses, screens});
 });
-
-// Route to handle form submission for access (login)
-app.post('/access', checkAccess, (req, res) => {
-  console.log("POST /access: Login form submitted");
-  res.redirect('/screenshots'); // Redirect to /screenshots after successful login
-});
-
-
-
-
-
-
-
-// Route to render the status page with authentication
-app.get('/status', checkAccess, async (req, res) => {
-  console.log("GET /status: User is trying to access status");
-
-  if (!isAuthenticated) {
-    console.log("GET /status: User is not authenticated, redirecting to /access");
-    return res.redirect('/access'); // Redirect to access page if not authenticated
-  }
-
-  console.log("GET /status: User is authenticated, fetching client statuses and network data");
-
-  try {
-    // Retrieve client statuses from the database
-    const clientStatusResult = await pool.query('SELECT client_name, status, updated_at FROM client_statuses');
-    const screensResult = await pool.query('SELECT * FROM screens');
-
-    // Extract screen data from the result
-    const screens = screensResult.rows;
-    const clientStatuses = {};
-    clientStatusResult.rows.forEach(row => {
-      clientStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-    });
-
-    // Retrieve network statuses from the database
-    const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
-    const networkStatuses = {};
-    networkStatusResult.rows.forEach(row => {
-      networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-    });
-
-    console.log('Rendering status page with client and network data');
-    res.render('status', { clientStatuses, networkStatuses, screens });
-  } catch (error) {
-    console.error("Error fetching data from the database:", error);
-    res.status(500).send('Error fetching data');
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -701,6 +638,31 @@ app.post('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
 
 
 
+
+
+
+// app.post('/set-volume/:id', (req, res) => {
+//   const clientId = req.params.id;
+//   const volumeValue = req.body.volume; // Ensure body parsing middleware is used (e.g., express.json())
+//   const ws = clients[clientId];
+
+//   if (ws && ws.readyState === WebSocket.OPEN) {
+//     // Send a JSON message with the volume value as part of the message string
+//     ws.send(JSON.stringify({ type: 'SET_VOLUME', message: `Set volume to ${parseInt(volumeValue)}`, value: volumeValue }));
+    
+//     // Optional: send an email notification when the volume is set
+//     sendEmail(clientId, `Volume set to ${volumeValue}`);
+
+//     res.json({ message: `Set volume command sent to client ${clientId} with value ${volumeValue}` });
+//   } else {
+//     res.status(404).json({ message: `Client ${clientId} is not connected` });
+//   }
+// });
+
+
+
+
+
 app.post('/set-volume/:id', async (req, res) => {
   const clientId = req.params.id;
   const volumeValue = req.body.volume; // Ensure body parsing middleware is used (e.g., express.json())
@@ -736,18 +698,6 @@ app.post('/set-volume/:id', async (req, res) => {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Route to delete a client
@@ -1113,6 +1063,82 @@ app.get('/master-restart', (req, res) => {
 
 
 
+
+// let isAuthenticated = false; // Simple flag for authentication
+
+// // Middleware to check access
+// const checkAccess = (req, res, next) => {
+//   console.log("Middleware: In checkAccess");
+
+//   if (isAuthenticated) {
+//     console.log("Middleware: User is already authenticated");
+//     return next(); // Proceed if the user is authenticated
+//   }
+
+//   const { username, password } = req.body;
+//   console.log(`Middleware: Received credentials -> username: ${username}, password: ${password}`);
+
+//   // Array of valid credentials
+//   const validCredentials = [
+//     { username: 'dhvanil', password: 'dhvanil1403@' },
+//     { username: 'sahas', password: '1248163264' }
+//   ];
+
+//   // Check if the provided credentials match any valid ones
+//   const isValidUser = validCredentials.some(cred => 
+//     cred.username === username && cred.password === password
+//   );
+
+//   if (isValidUser) {
+//     isAuthenticated = true; // Mark user as authenticated
+//     console.log("Middleware: Authentication successful");
+//     next();
+//   } else {
+//     console.log("Middleware: Authentication failed");
+//     res.status(401).send('Unauthorized');
+//   }
+// };
+
+// Route to render the login page
+app.get('/access', (req, res) => {
+  console.log("GET /access: Rendering login page");
+  res.render('access'); // Render the login page (access.ejs)
+});
+
+// Route to handle form submission for access (login)
+// Login route to authenticate the user
+app.post('/access', (req, res) => {
+  const { username, password } = req.body;
+  console.log(`POST /access: Received credentials -> username: ${username}, password: ${password}`);
+
+  // Array of valid credentials
+  const validCredentials = [
+    { username: 'dhvanil', password: 'dhvanil1403@' },
+    { username: 'sahas', password: '1248163264' }
+  ];
+
+  // Check if the provided credentials match any valid ones
+  const isValidUser = validCredentials.some(cred => 
+    cred.username === username && cred.password === password
+  );
+
+  if (isValidUser) {
+    isAuthenticated = true; // Mark user as authenticated
+    console.log("POST /access: Authentication successful");
+
+    // Redirect to the originally requested page or default to '/screenshots'
+    const redirectPath = req.session.returnTo || '/screenshots';
+    console.log("redirectPath",redirectPath);
+    
+    delete req.session.returnTo; // Clear the saved path from the session
+    res.redirect(redirectPath); // Redirect to the intended route
+  } else {
+    console.log("POST /access: Authentication failed");
+    res.status(401).send('Unauthorized');
+  }
+});
+
+
 // // Route to fetch all screenshots data
 // app.get('/screenshots', (req, res) => {
 //   console.log("GET /screenshots: User is trying to access screenshots");
@@ -1138,7 +1164,7 @@ app.get('/master-restart', (req, res) => {
 
 
 // Route to fetch all screenshots, screens, and client status data
-app.get('/screenshots', (req, res) => {
+app.get('/screenshots', checkAccess, (req, res) => {
   console.log("GET /screenshots: User is trying to access screenshots");
 
   if (!isAuthenticated) {
