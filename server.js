@@ -351,8 +351,21 @@ const screens = screensResult.rows;
   });
 
 
+
+   // Fetch volume data from the database (latest for each client)
+    const volumeData = await db.query(`
+      SELECT client_id, volume FROM public.volume_changes 
+      WHERE timestamp = (SELECT MAX(timestamp) FROM public.volume_changes WHERE client_id = volume_changes.client_id)
+    `);
+
+    // Create an object for easy access to the volume for each client
+    const volumeValues = volumeData.rows.reduce((acc, row) => {
+      acc[row.client_id] = row.volume;
+      return acc;
+    }, {});
+
   console.log('Rendering status page with client and network data');
-  res.render('status', { clientStatuses, networkStatuses, screens});
+  res.render('status', { clientStatuses, networkStatuses, screens,    volumeValues});
 });
 
 
