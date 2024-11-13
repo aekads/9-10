@@ -70,16 +70,16 @@
               <td>
                 <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
                 <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-              <label for="volumeValue-<%= clientId %>">Set Volume:</label>
+             <label for="volumeValue-<%= clientId %>">Set Volume:</label>
 <input
   type="range"
   id="volumeValue-<%= clientId %>"
   min="1"
   max="15"
-  value="1"
+  value="1" <!-- Initial value -->
   oninput="updateVolumeDisplay('<%= clientId %>')"
 >
-<span id="volumeDisplay-<%= clientId %>">1</span>
+<span id="volumeDisplay-<%= clientId">1</span> <!-- Initial display value -->
 <button id="setVolumeButton-<%= clientId %>" onclick="setVolume('<%= clientId %>')">Set Volume</button>
 
 
@@ -130,7 +130,12 @@
       .catch(error => console.error('Error:', error));
     }
 
-    function setVolume(clientId) {
+function updateVolumeDisplay(clientId) {
+  const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
+  document.getElementById(`volumeDisplay-${clientId}`).innerText = volumeValue;
+}
+
+function setVolume(clientId) {
   const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
   const button = document.querySelector(`#setVolumeButton-${clientId}`);
   
@@ -153,6 +158,7 @@
     button.disabled = false;
   });
 }
+
 
 
   </script>
