@@ -134,34 +134,25 @@
       .catch(error => console.error('Error:', error));
     }
 
-// Separate function to update the displayed value
-function updateVolumeDisplay(slider, clientId) {
-  document.getElementById(`volumeDisplay-${clientId}`).innerText = slider.value;
+function updateVolumeDisplay(inputElement, clientId) {
+  const volumeDisplay = document.getElementById(`volumeDisplay-${clientId}`);
+  volumeDisplay.innerText = inputElement.value; // Update the displayed volume value
 }
-
 
 function setVolume(clientId) {
   const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
-  const button = document.querySelector(`#setVolumeButton-${clientId}`);
-  
-  // Disable the button to prevent multiple submissions
-  button.disabled = true;
-
-  fetch(`/set-volume/${clientId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ volume: volumeValue })
-  })
-  .then(response => response.json())
-  .then(data => alert(data.message))
-  .catch(error => {
-    console.error('Error setting volume:', error);
-    alert('Failed to set volume. Please try again.');
-  })
-  .finally(() => {
-    // Re-enable the button after the request completes
-    button.disabled = false;
-  });
+  if (volumeValue) {
+    fetch(`/set-volume/${clientId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ volume: volumeValue })
+    })
+    .then(response => response.json())
+    .then(data => alert(data.message))
+    .catch(error => console.error('Error:', error));
+  } else {
+    alert('Please enter a volume value');
+  }
 }
 
 
