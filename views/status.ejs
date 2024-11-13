@@ -71,17 +71,18 @@
                 <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
                 <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
          <td>
-  <input 
-    type="number" 
-    id="volumeValue-<%= clientId %>" 
-    value="<%= volumeValues[clientId] || 1 %>" <!-- Set initial volume value from the database -->
-    min="1"
-    max="15"
-    oninput="document.getElementById('volumeDisplay-<%= clientId %>').innerText = this.value"
-  >
-  <span id="volumeDisplay-<%= clientId %>"><%= volumeValues[clientId] || 1 %></span> <!-- Initial volume display -->
-  <button onclick="setVolume('<%= clientId %>')">Set Volume</button>
-</td>
+<label for="volumeValue-<%= clientId %>">Set Volume:</label>
+<input
+  type="range"
+  id="volumeValue-<%= clientId %>"
+  min="1"
+  max="15"
+  value="<%= volumeValues[clientId] || 1 %>"  <!-- Set initial volume value from the database -->
+  oninput="updateVolumeDisplay(this, '<%= clientId %>')"
+>
+<span id="volumeDisplay-<%= clientId %>"><%= volumeValues[clientId] || 1 %></span> <!-- Initial volume display -->
+<button id="setVolumeButton-<%= clientId %>" onclick="setVolume('<%= clientId %>')">Set Volume</button>
+
 
 
 
