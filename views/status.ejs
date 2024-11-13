@@ -70,8 +70,19 @@
               <td>
                 <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
                 <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-                <input type="number" id="volumeValue-<%= clientId %>" placeholder="Set Volume">
-                <button onclick="setVolume('<%= clientId %>')">Set Volume</button>
+               <!-- Volume Slider for setting volume from 1 to 15 -->
+<label for="volumeValue-<%= clientId %>">Set Volume:</label>
+<input
+  type="range"
+  id="volumeValue-<%= clientId %>"
+  min="1"
+  max="15"
+  value="1"  <!-- Default value -->
+  oninput="updateVolumeDisplay('<%= clientId %>')"
+>
+<span id="volumeDisplay-<%= clientId %>">1</span>
+<button onclick="setVolume('<%= clientId %>')">Set Volume</button>
+
               </td>
             </tr>
           <% }) %>
@@ -120,20 +131,29 @@
     }
 
     function setVolume(clientId) {
-      const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
-      if (volumeValue) {
-        fetch(`/set-volume/${clientId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ volume: volumeValue })
-        })
-        .then(response => response.json())
-        .then(data => alert(data.message))
-        .catch(error => console.error('Error:', error));
-      } else {
-        alert('Please enter a volume value');
-      }
-    }
+  const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
+  const button = document.querySelector(`#setVolumeButton-${clientId}`);
+  
+  // Disable the button to prevent multiple submissions
+  button.disabled = true;
+
+  fetch(`/set-volume/${clientId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ volume: volumeValue })
+  })
+  .then(response => response.json())
+  .then(data => alert(data.message))
+  .catch(error => {
+    console.error('Error setting volume:', error);
+    alert('Failed to set volume. Please try again.');
+  })
+  .finally(() => {
+    // Re-enable the button after the request completes
+    button.disabled = false;
+  });
+}
+
 
   </script>
 </body>
