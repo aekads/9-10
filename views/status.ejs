@@ -133,22 +133,27 @@
       .catch(error => console.error('Error:', error));
     }
 
-function updateVolumeDisplay(inputElement, clientId) {
+// Function to update the volume display dynamically when slider is moved
+function updateVolumeDisplay(slider, clientId) {
+  // Get the span element for volume display
   const volumeDisplay = document.getElementById(`volumeDisplay-${clientId}`);
-  volumeDisplay.innerText = inputElement.value; // Dynamically update the volume display text as the slider is moved
+  
+  // Set the inner text of the span to the slider's value
+  volumeDisplay.innerText = slider.value;
 }
 
+// Function to send the new volume to the server when the "Set Volume" button is clicked
 function setVolume(clientId) {
-  const volumeValue = document.getElementById(`volumeValue-${clientId}`).value;
+  const volumeValue = document.getElementById(`volumeValue-${clientId}`).value; // Get the value of the slider
   if (volumeValue) {
     fetch(`/set-volume/${clientId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ volume: volumeValue })
+      body: JSON.stringify({ volume: volumeValue }) // Send the volume value to the server
     })
     .then(response => response.json())
-    .then(data => alert(data.message))
-    .catch(error => console.error('Error:', error));
+    .then(data => alert(data.message)) // Alert success message
+    .catch(error => console.error('Error:', error)); // Log errors if any
   } else {
     alert('Please enter a volume value');
   }
