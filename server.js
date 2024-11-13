@@ -641,7 +641,7 @@ app.post('/YOUTUBE_VOL_DOWN/:id', (req, res) => {
 
 
 
-app.post('/set-volume/:id', (req, res) => {
+app.post('/set-volume/:id', async (req, res) => {
   const clientId = req.params.id;
   const volumeValue = req.body.volume; // Ensure body parsing middleware is used (e.g., express.json())
   const ws = clients[clientId];
