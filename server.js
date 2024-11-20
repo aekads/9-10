@@ -67,60 +67,6 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
-
-// Function to save message to the database
-const saveMessage = async (data) => {
-  try {
-    // Debug log to verify incoming data
-    console.log('Incoming data:', data);
-
-    // Ensure the `id` is present and parsed correctly from the data
-    const query = `
-      INSERT INTO screenshots (id, type, filename, image_url, size)
-      VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (id)
-      DO UPDATE SET 
-        type = EXCLUDED.type,
-        filename = EXCLUDED.filename,
-        image_url = EXCLUDED.image_url,
-        size = EXCLUDED.size;
-    `;
-
-    // Ensure you're passing the correct data keys (Id vs id)
-    const values = [data.Id || data.id, data.type, data.filename, data.imageUrl, data.size];
-
-    // Execute the query
-    await pool.query(query, values);
-    console.log('Data saved successfully.');
-  } catch (error) {
-    // Handle errors and log them for debugging
-    console.error('Error saving data:', error);
-  }
-};
-
-
-
-
-
-  ws.on('message', (message) => {
-    try {
-      // Parse the received message
-      const parsedMessage = JSON.parse(message);
-      console.log('Received message:', parsedMessage);
-
-      // Save the parsed message to the database
-      saveMessage(parsedMessage);
-
-      // Send a confirmation back to the client
-     
-    } catch (error) {
-      console.error('Error processing message:', error);
-     
-    }
-  });
-
-
-
 ws.on('message', async (message) => {
   console.log(`Received message from ${clientId}: ${message}`);
 
@@ -150,7 +96,7 @@ ws.on('message', async (message) => {
     } catch (error) {
       console.error(`Failed to update network status in database:`, error);
     }
-  } if (data.type === 'Device_Config') {
+  } else if (data.type === 'Device_Config') {
     console.log(`Device configuration data received:`, data);
 
     // Store device configuration data in the database
@@ -166,7 +112,6 @@ ws.on('message', async (message) => {
           data['Screen-resolution'],
           data.downstream_bandwidth,
           data.upstream_bandwidth,
-
           data.manufacturer,
           data.model,
           data.os_version,
@@ -184,17 +129,41 @@ ws.on('message', async (message) => {
     } catch (error) {
       console.error(`Failed to update device configuration in database:`, error);
     }
+  } else if (data.type === 'Screenshot') {
+    console.log(`Screenshot data received:`, data);
+
+    // Store screenshot data in the database
+    try {
+      const query = `
+        INSERT INTO screenshots (id, type, filename, image_url, size)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id)
+        DO UPDATE SET 
+          type = EXCLUDED.type,
+          filename = EXCLUDED.filename,
+          image_url = EXCLUDED.image_url,
+          size = EXCLUDED.size;
+      `;
+
+      // Ensure you're passing the correct data keys (Id vs id)
+      const values = [
+        data.Id || data.id,
+        data.type,
+        data.filename,
+        data.imageUrl,
+        data.size,
+      ];
+
+      // Execute the query
+      await pool.query(query, values);
+      console.log(`Screenshot data saved successfully for ID ${data.id || data.Id}.`);
+    } catch (error) {
+      console.error('Error saving screenshot data:', error);
+    }
   } else {
-    console.log(`Received non-network and non-Device_Config data:`, data);
+    console.log(`Received non-network, non-Device_Config, and non-Screenshot data:`, data);
   }
 });
-
-
-
-
-
-
-
 
 
 
