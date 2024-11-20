@@ -74,7 +74,7 @@ ws.on('message', async (message) => {
   try {
     data = JSON.parse(message);
   } catch (error) {
-    console.error(`Failed to parse message: ${message}`, error);
+   
     return; // Exit early if message parsing fails
   }
 
