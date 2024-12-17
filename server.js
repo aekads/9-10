@@ -191,13 +191,20 @@ ws.on('message', async (message) => {
         data.uploaded_time_timestamp || Date.now(),
       ]);
       console.log(`Video impression data saved for video ID ${data.video_id}.`);
+      // Send success response
+      ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
     } catch (error) {
       console.error('Failed to save video impression data:', error);
+      // Send error response
+      ws.send(JSON.stringify({ status: 'error', message: 'Failed to save video impression data.' }));
     }
   } else {
     console.log(`Unknown message type received: ${data.type}`);
+    // Send error response for unknown types
+    ws.send(JSON.stringify({ status: 'error', message: 'Unknown message type received.' }));
   }
 });
+
 
 
 
