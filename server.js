@@ -125,7 +125,7 @@ ws.on('message', async (message) => {
 
       console.log(`Device configuration updated in database for client ${data.clientId} at ${dateTime}`);
     } catch (error) {
-      console.error('Failed to update device configuration in database:', error);
+      
     }
   } else if (data.type === 'Screenshot') {
     try {
