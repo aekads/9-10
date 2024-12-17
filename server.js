@@ -167,8 +167,8 @@ ws.on('message', async (message) => {
   } else if (data.type === 'video_impression') {
     try {
       const query = `
-        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, timestamp, uploaded_time_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, uploaded_time_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         
       `;
       await pool.query(query, [
@@ -179,7 +179,7 @@ ws.on('message', async (message) => {
         data.name,
         data.count,
         data.duration,
-        data.timestamp,
+      
         data.uploaded_time_timestamp || Date.now(),
       ]);
       console.log(`Video impression data saved for video ID ${data.video_id}.`);
