@@ -79,36 +79,43 @@ ws.on('message', async (message) => {
 
   const dateTime = new Date().toISOString(); // ISO format for consistency
 
-  if (data.type === 'video_impression') {
-    try {
-      const query = `
-        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, uploaded_time_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        
-      `;
-      await pool.query(query, [
-        data.type,
-        data.video_id,
-        data.screen_id,
-        data.device_id,
-        data.name,
-        data.count,
-        data.duration,
-      
-        data.uploaded_time_timestamp || Date.now(),
-      ]);
-      console.log(`Video impression data saved for video ID ${data.video_id}.`);
-      // Send success response
-      ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
-    } catch (error) {
-      console.error('Failed to save video impression data:', error);
-      // Send error response
-      ws.send(JSON.stringify({ status: 'error', message: 'Failed to save video impression data.' }));
-    }
-  } else {
-    console.log(`Unknown message type received: ${data.type}`);
-    // Send error response for unknown types
-    ws.send(JSON.stringify({ status: 'error', message: 'Unknown message type received.' }));
+ if (data.type === 'video_impression') {
+  try {
+    // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
+    const timestampInSeconds = Math.floor(data.timestamp / 1000);
+    const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
+
+    const query = `
+      INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, timestamp, uploaded_time_timestamp)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (video_id) 
+      DO UPDATE SET 
+        screen_id = EXCLUDED.screen_id, 
+        device_id = EXCLUDED.device_id, 
+        name = EXCLUDED.name, 
+        count = EXCLUDED.count, 
+        duration = EXCLUDED.duration, 
+        timestamp = EXCLUDED.timestamp, 
+        uploaded_time_timestamp = EXCLUDED.uploaded_time_timestamp;
+    `;
+    await pool.query(query, [
+      data.type,
+      data.video_id,
+      data.screen_id,
+      data.device_id,
+      data.name,
+      data.count,
+      data.duration,
+      timestampInSeconds,
+      uploadedTimeInSeconds,
+    ]);
+    console.log(`Video impression data saved for video ID ${data.video_id}.`);
+    // Send success response
+    ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
+  } catch (error) {
+    console.error('Failed to save video impression data:', error);
+    // Send error response
+    ws.send(JSON.stringify({ status: 'error', message: 'Failed to save video impression data.' }));
   }
 });
 
