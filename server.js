@@ -94,15 +94,7 @@ ws.on('message', async (message) => {
       const query = `
         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
-        ON CONFLICT (video_id) 
-        DO UPDATE SET 
-          screen_id = EXCLUDED.screen_id, 
-          device_id = EXCLUDED.device_id, 
-          name = EXCLUDED.name, 
-          count = EXCLUDED.count, 
-          duration = EXCLUDED.duration, 
-          "timestamp" = EXCLUDED."timestamp", 
-          uploaded_time_timestamp = EXCLUDED.uploaded_time_timestamp;
+        
       `;
 
       // Execute the query
