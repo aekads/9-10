@@ -64,7 +64,6 @@ wsServer.on('connection', async (ws, req) => {
     console.log(`Client ${clientId} connected`);
     broadcastStatus(clientId, 'online', dateTime);
   }
-
 ws.on('message', async (message) => {
   console.log(`Received message: ${message}`);
 
@@ -94,7 +93,6 @@ ws.on('message', async (message) => {
       const query = `
         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
-        
       `;
 
       // Execute the query
@@ -114,14 +112,21 @@ ws.on('message', async (message) => {
       // Send success response
       ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
     } catch (error) {
-      console.error('Failed to save video impression data:', error);
-      ws.send(JSON.stringify({ status: 'error', message: 'Failed to save video impression data. ' + error.message }));
+      const errorMessage = `Failed to save video impression data: ${error.message}`;
+      console.error(errorMessage);
+
+      // Log the exact error response being sent to the client
+      console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
+
+      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
     }
   } else {
     // Send error response if message type is not 'video_impression'
+    console.log('Sending error response: Invalid message type');
     ws.send(JSON.stringify({ status: 'error', message: 'Invalid message type.' }));
   }
 });
+
 
 
 
