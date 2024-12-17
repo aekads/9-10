@@ -74,7 +74,6 @@ ws.on('message', async (message) => {
     data = JSON.parse(message);
   } catch (error) {
     console.error(`Failed to parse message: ${error.message}`);
-    // Send a response indicating the error in parsing
     ws.send(JSON.stringify({ status: 'error', message: 'Invalid JSON format.' }));
     return; // Exit if the message isn't valid JSON
   }
@@ -91,10 +90,19 @@ ws.on('message', async (message) => {
       const timestampInSeconds = Math.floor(data.timestamp / 1000);
       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
 
+      // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
       const query = `
-        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, timestamp, uploaded_time_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       
+        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
+        ON CONFLICT (video_id) 
+        DO UPDATE SET 
+          screen_id = EXCLUDED.screen_id, 
+          device_id = EXCLUDED.device_id, 
+          name = EXCLUDED.name, 
+          count = EXCLUDED.count, 
+          duration = EXCLUDED.duration, 
+          "timestamp" = EXCLUDED."timestamp", 
+          uploaded_time_timestamp = EXCLUDED.uploaded_time_timestamp;
       `;
 
       // Execute the query
@@ -115,7 +123,6 @@ ws.on('message', async (message) => {
       ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
     } catch (error) {
       console.error('Failed to save video impression data:', error);
-      // Send error response indicating failure to save
       ws.send(JSON.stringify({ status: 'error', message: 'Failed to save video impression data. ' + error.message }));
     }
   } else {
