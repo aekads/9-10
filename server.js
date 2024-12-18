@@ -110,7 +110,7 @@ ws.on('message', async (message) => {
 
       console.log(`Video impression data saved for video ID ${data.video_id}.`);
       // Send success response
-      ws.send(JSON.stringify({ status: 'ok', message: `Video impression data saved for video ID ${data.video_id}.` }));
+    
     } catch (error) {
       const errorMessage = `Failed to save video impression data: ${error.message}`;
       console.error(errorMessage);
@@ -118,12 +118,11 @@ ws.on('message', async (message) => {
       // Log the exact error response being sent to the client
       console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
 
-      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
     }
   } else {
     // Send error response if message type is not 'video_impression'
     console.log('Sending error response: Invalid message type');
-    ws.send(JSON.stringify({ status: 'error', message: 'Invalid message type.' }));
+   
   }
 });
 
