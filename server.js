@@ -775,7 +775,7 @@ setInterval(() => {
     }
   });
 
-  console.log('Scheduled restart command sent to all connected clients');
+  console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
 }, 30000); // 3600000 milliseconds = 1 hour
 
 
