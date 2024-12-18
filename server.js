@@ -776,7 +776,7 @@ setInterval(() => {
   });
 
   console.log('Scheduled restart command sent to all connected clients');
-}, 3600000); // 3600000 milliseconds = 1 hour
+}, 30000); // 3600000 milliseconds = 1 hour
 
 
 
