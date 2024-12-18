@@ -742,6 +742,42 @@ app.post('/set-power-times/:id', async (req, res) => {
 
 
 
+// Route to perform master restart on all connected clients
+app.post('/VIDEO_IMPRESSION', (req, res) => {
+  const clientIds = Object.keys(clients);
+  const VIDEO_IMPRESSIONMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(VIDEO_IMPRESSIONMessage));
+      console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
+    }
+  });
+
+  // Send an email after master restart command
+  sendEmail('VIDEO_IMPRESSION', 'The VIDEO_IMPRESSION command has been sent to all connected clients.');
+
+  res.json({ message: 'VIDEO_IMPRESSION command sent to all connected clients' });
+});
+
+
+// Schedule the master-restart every minute
+setInterval(() => {
+  const clientIds = Object.keys(clients);
+  const VIDEO_IMPRESSIONMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(VIDEO_IMPRESSIONMessage));
+      console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
+    }
+  });
+
+  console.log('Scheduled restart command sent to all connected clients');
+}, 3600000); // 3600000 milliseconds = 1 hour
+
 
 
 
