@@ -86,8 +86,9 @@ ws.on('message', async (message) => {
       }
 
       // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
-      const timestampInSeconds = Math.floor(data.timestamp / 1000);
-      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
+      const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
+      const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
 
       // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
       const query = `
@@ -121,10 +122,12 @@ ws.on('message', async (message) => {
     }
   } else {
     // Send error response if message type is not 'video_impression'
-    console.log('Sending error response: Invalid message type');
-   
+    const errorMessage = 'Invalid message type';
+    console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
+    
   }
 });
+
 
 
 
