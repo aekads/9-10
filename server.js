@@ -123,18 +123,18 @@ ws.on('message', async (message) => {
       await pool.query(query, queryParams);
 
       console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-      ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+     
     } catch (error) {
       const errorMessage = `Failed to save video impression data: ${error.message}`;
       console.error('[ERROR]', errorMessage);
 
-      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+    
     }
   } else {
     const errorMessage = 'Invalid message type';
     console.warn('[WARNING]', errorMessage);
 
-    ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+  
   }
 });
 
