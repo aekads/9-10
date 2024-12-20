@@ -105,7 +105,7 @@ ws.on('message', async (message) => {
 
       const updateQuery = `
         UPDATE video_impressions
-        SET count = count + $1, duration = duration + $2
+        SET count = count + $1, duration = $2
         WHERE video_tag = $3 AND DATE("timestamp") = $4
         RETURNING id
       `;
