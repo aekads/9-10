@@ -65,39 +65,45 @@ wsServer.on('connection', async (ws, req) => {
     broadcastStatus(clientId, 'online', dateTime);
   }
 ws.on('message', async (message) => {
-  console.log(`Received message: ${message}`);
+  console.log(`\n[INFO] Received message: ${message}`);
 
   let data;
   try {
-    // Parse incoming message
+    // Parse the incoming message
     data = JSON.parse(message);
+    console.log('[INFO] Parsed message successfully.');
   } catch (error) {
-    console.error(`Failed to parse message: ${error.message}`);
+    console.error('[ERROR] Failed to parse message:', error.message);
     ws.send(JSON.stringify({ status: 'error', message: 'Invalid JSON format.' }));
     return; // Exit if the message isn't valid JSON
   }
 
-  const dateTime = new Date().toISOString(); // ISO format for consistency
+  const dateTime = new Date().toISOString();
+  console.log(`[INFO] Current timestamp: ${dateTime}`);
+
   if (data.type === 'video_impression') {
+    console.log('[INFO] Processing "video_impression" message.');
+
     try {
-      // Ensure necessary fields are present and valid
-      if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
-        throw new Error('Missing required fields or invalid data types');
+      // Validate required fields and types
+      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration'];
+      for (const field of requiredFields) {
+        if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+          throw new Error(`Missing or invalid field: ${field}`);
+        }
       }
 
-      // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
       const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
       const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
 
-      // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
       const query = `
         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
       `;
 
-      // Execute the query
-      await pool.query(query, [
+      // Log the query parameters for debugging
+      const queryParams = [
         data.type,
         data.video_id,
         data.screen_id,
@@ -107,26 +113,28 @@ ws.on('message', async (message) => {
         data.duration,
         timestampInSeconds,
         uploadedTimeInSeconds,
-      ]);
+      ];
+      console.log('[INFO] Query parameters:', queryParams);
 
-      console.log(`Video impression data saved for video ID ${data.video_id}.`);
-      // Send success response
-    
+      // Execute the query
+      await pool.query(query, queryParams);
+
+      console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
+      ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
     } catch (error) {
       const errorMessage = `Failed to save video impression data: ${error.message}`;
-      console.error(errorMessage);
+      console.error('[ERROR]', errorMessage);
 
-      // Log the exact error response being sent to the client
-      console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
-
+      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
     }
   } else {
-    // Send error response if message type is not 'video_impression'
     const errorMessage = 'Invalid message type';
-    console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
-    
+    console.warn('[WARNING]', errorMessage);
+
+    ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
   }
 });
+
 
 
 
