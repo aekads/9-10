@@ -86,7 +86,7 @@ ws.on('message', async (message) => {
 
     try {
       // Validate required fields and types
-      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration'];
+      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
       for (const field of requiredFields) {
         if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
           throw new Error(`Missing or invalid field: ${field}`);
@@ -98,8 +98,10 @@ ws.on('message', async (message) => {
       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
 
       const query = `
-        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
+        INSERT INTO video_impressions (
+          type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10))
       `;
 
       // Log the query parameters for debugging
@@ -111,6 +113,7 @@ ws.on('message', async (message) => {
         data.name,
         data.count,
         data.duration,
+        data.video_tag,
         timestampInSeconds,
         uploadedTimeInSeconds,
       ];
