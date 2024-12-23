@@ -64,7 +64,9 @@ wsServer.on('connection', async (ws, req) => {
     console.log(`Client ${clientId} connected`);
     broadcastStatus(clientId, 'online', dateTime);
   }
-ws.on('message', async (message) => { 
+
+
+ws.on('message', async (message) => {
   console.log(`\n[INFO] Received message: ${message}`);
 
   let data;
@@ -97,64 +99,43 @@ ws.on('message', async (message) => {
       const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
 
-      // Convert timestamp to date only (ignoring time) for comparison
-      const dateString = new Date(data.timestamp).toISOString().split('T')[0];
-
-      // Log for debugging
-      console.log(`[INFO] Checking for existing video impression with tag: ${data.video_tag} and date: ${dateString}`);
-
-      const updateQuery = `
-        UPDATE video_impressions
-        SET count = count + $1, duration = $2
-        WHERE video_tag = $3 AND DATE("timestamp") = $4
-        RETURNING id
-      `;
-
-      const insertQuery = `
+      const query = `
         INSERT INTO video_impressions (
           type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10))
       `;
 
-      // Try updating an existing row first
-      const updateResult = await pool.query(updateQuery, [
+      // Log the query parameters for debugging
+      const queryParams = [
+        data.type,
+        data.video_id,
+        data.screen_id,
+        data.device_id,
+        data.name,
         data.count,
         data.duration,
         data.video_tag,
-        dateString,
-      ]);
+        timestampInSeconds,
+        uploadedTimeInSeconds,
+      ];
+      console.log('[INFO] Query parameters:', queryParams);
 
-      if (updateResult.rowCount > 0) {
-        console.log('[SUCCESS] Updated existing video impression record.');
-      } else {
-        console.log('[INFO] No existing record found. Inserting new record.');
+      // Execute the query
+      await pool.query(query, queryParams);
 
-        // If no rows were updated, insert a new row
-        const queryParams = [
-          data.type,
-          data.video_id,
-          data.screen_id,
-          data.device_id,
-          data.name,
-          data.count,
-          data.duration,
-          data.video_tag,
-          timestampInSeconds,
-          uploadedTimeInSeconds,
-        ];
-        await pool.query(insertQuery, queryParams);
-
-        console.log(`[SUCCESS] Inserted new video impression record for video ID: ${data.video_id}.`);
-      }
+      console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
+      ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
     } catch (error) {
-      const errorMessage = `Failed to process video impression data: ${error.message}`;
+      const errorMessage = `Failed to save video impression data: ${error.message}`;
       console.error('[ERROR]', errorMessage);
+
       ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
     }
   } else {
     const errorMessage = 'Invalid message type';
     console.warn('[WARNING]', errorMessage);
+
     ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
   }
 });
@@ -163,6 +144,9 @@ ws.on('message', async (message) => {
 
 
 
+
+
+  
 
 
 
