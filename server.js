@@ -68,26 +68,7 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
-
-
-ws.on('message', async (message) => {
-  console.log(`\n[INFO] Received message: ${message}`);
-
-  let data;
-  try {
-    // Parse the incoming message
-    data = JSON.parse(message);
-    console.log('[INFO] Parsed message successfully.');
-  } catch (error) {
-    console.error('[ERROR] Failed to parse message:', error.message);
-    ws.send(JSON.stringify({ status: 'error', message: 'Invalid JSON format.' }));
-    return; // Exit if the message isn't valid JSON
-  }
-
-  const dateTime = new Date().toISOString();
-  console.log(`[INFO] Current timestamp: ${dateTime}`);
-
-  if (data.type === 'video_impression') {
+if (data.type === 'video_impression') {
     console.log('[INFO] Processing "video_impression" message.');
 
     try {
@@ -104,21 +85,65 @@ ws.on('message', async (message) => {
       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
       const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
 
-      // Define the UPSERT query
-      const query = `
-        INSERT INTO video_impressions (
-          type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
+      // Check for existing entry in the main table
+      const checkQuery = `
+        SELECT id, count 
+        FROM video_impressions 
+        WHERE uploaded_date = $1 AND video_tag = $2
+      `;
+      const checkParams = [uploadedDate, data.video_tag];
+      const result = await pool.query(checkQuery, checkParams);
+
+      if (result.rows.length > 0) {
+        // Entry exists; update the count
+        const existingEntry = result.rows[0];
+        const newCount = existingEntry.count + data.count;
+
+        const updateQuery = `
+          UPDATE video_impressions 
+          SET count = $1, duration = duration + $2 
+          WHERE id = $3
+        `;
+        const updateParams = [newCount, data.duration, existingEntry.id];
+        await pool.query(updateQuery, updateParams);
+
+        console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
+        ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+      } else {
+        // Entry does not exist; insert a new record in the main table
+        const insertQuery = `
+          INSERT INTO video_impressions (
+            type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
+        `;
+        const insertParams = [
+          data.type,
+          data.video_id,
+          data.screen_id,
+          data.device_id,
+          data.name,
+          data.count,
+          data.duration,
+          data.video_tag,
+          timestampInSeconds,
+          uploadedTimeInSeconds,
+          uploadedDate,
+        ];
+        await pool.query(insertQuery, insertParams);
+
+        console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
+        ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+      }
+
+      // Insert into the new table (video_impressions_log)
+      const logInsertQuery = `
+        INSERT INTO video_impressions_log (
+          type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-        ON CONFLICT (uploaded_date, video_tag)
-        DO UPDATE SET
-          count = video_impressions.count + EXCLUDED.count,
-          "timestamp" = GREATEST(video_impressions."timestamp", EXCLUDED."timestamp")
-        RETURNING id;
       `;
-
-      // Log the query parameters for debugging
-      const queryParams = [
+      const logInsertParams = [
         data.type,
         data.video_id,
         data.screen_id,
@@ -129,15 +154,12 @@ ws.on('message', async (message) => {
         data.video_tag,
         timestampInSeconds,
         uploadedTimeInSeconds,
-        uploadedDate, // Pass the extracted date as an additional parameter
+        uploadedDate,
       ];
-      console.log('[INFO] Query parameters:', queryParams);
+      await pool.query(logInsertQuery, logInsertParams);
 
-      // Execute the query
-      const result = await pool.query(query, queryParams);
+      console.log(`[SUCCESS] Video impression log entry saved for video ID: ${data.video_id}.`);
 
-      console.log(`[SUCCESS] Video impression data handled. Result ID: ${result.rows[0].id}`);
-      ws.send(JSON.stringify({ status: 'success', message: 'Data saved or updated successfully.' }));
     } catch (error) {
       const errorMessage = `Failed to save video impression data: ${error.message}`;
       console.error('[ERROR]', errorMessage);
