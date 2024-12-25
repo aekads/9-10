@@ -66,6 +66,22 @@ wsServer.on('connection', async (ws, req) => {
   }
 
 
+ws.on('message', async (message) => {
+  console.log(`\n[INFO] Received message: ${message}`);
+
+  let data;
+  try {
+    // Parse the incoming message
+    data = JSON.parse(message);
+    console.log('[INFO] Parsed message successfully.');
+  } catch (error) {
+    console.error('[ERROR] Failed to parse message:', error.message);
+    ws.send(JSON.stringify({ status: 'error', message: 'Invalid JSON format.' }));
+    return; // Exit if the message isn't valid JSON
+  }
+
+  const dateTime = new Date().toISOString();
+  console.log(`[INFO] Current timestamp: ${dateTime}`);
 
 
 if (data.type === 'video_impression') {
