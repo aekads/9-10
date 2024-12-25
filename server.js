@@ -808,7 +808,7 @@ setInterval(() => {
   });
 
   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 415000); // 3600000 milliseconds = 1 hour
+}, 1800000 ); // 3600000 milliseconds = 1 hour
 
 
 
