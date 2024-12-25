@@ -70,7 +70,6 @@ wsServer.on('connection', async (ws, req) => {
 
 
 
-
 ws.on('message', async (message) => {
   console.log(`\n[INFO] Received message: ${message}`);
 
@@ -89,65 +88,69 @@ ws.on('message', async (message) => {
   console.log(`[INFO] Current timestamp: ${dateTime}`);
 
   if (data.type === 'video_impression') {
-  console.log('[INFO] Processing "video_impression" message.');
+    console.log('[INFO] Processing "video_impression" message.');
 
-  try {
-    // Validate required fields and types
-    const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
-    for (const field of requiredFields) {
-      if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
-        throw new Error(`Missing or invalid field: ${field}`);
+    try {
+      // Validate required fields and types
+      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
+      for (const field of requiredFields) {
+        if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+          throw new Error(`Missing or invalid field: ${field}`);
+        }
       }
+
+      const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
+      const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
+      const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
+
+      // Define the UPSERT query
+      const query = `
+        INSERT INTO video_impressions (
+          type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
+        ON CONFLICT (uploaded_date, video_tag)
+        DO UPDATE SET
+          count = video_impressions.count + EXCLUDED.count,
+          "timestamp" = GREATEST(video_impressions."timestamp", EXCLUDED."timestamp")
+        RETURNING id;
+      `;
+
+      // Log the query parameters for debugging
+      const queryParams = [
+        data.type,
+        data.video_id,
+        data.screen_id,
+        data.device_id,
+        data.name,
+        data.count,
+        data.duration,
+        data.video_tag,
+        timestampInSeconds,
+        uploadedTimeInSeconds,
+        uploadedDate, // Pass the extracted date as an additional parameter
+      ];
+      console.log('[INFO] Query parameters:', queryParams);
+
+      // Execute the query
+      const result = await pool.query(query, queryParams);
+
+      console.log(`[SUCCESS] Video impression data handled. Result ID: ${result.rows[0].id}`);
+      ws.send(JSON.stringify({ status: 'success', message: 'Data saved or updated successfully.' }));
+    } catch (error) {
+      const errorMessage = `Failed to save video impression data: ${error.message}`;
+      console.error('[ERROR]', errorMessage);
+
+      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
     }
-
-    const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
-    const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
-    const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
-    const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
-
-    const query = 
-      `INSERT INTO video_impressions (
-        type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)`;
-
-    // Log the query parameters for debugging
-    const queryParams = [
-      data.type,
-      data.video_id,
-      data.screen_id,
-      data.device_id,
-      data.name,
-      data.count,
-      data.duration,
-      data.video_tag,
-      timestampInSeconds,
-      uploadedTimeInSeconds,
-      uploadedDate, // Pass the extracted date as an additional parameter
-    ];
-    console.log('[INFO] Query parameters:', queryParams);
-
-    // Execute the query
-    await pool.query(query, queryParams);
-
-    console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-    ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
-  } catch (error) {
-    const errorMessage = `Failed to save video impression data: ${error.message}`;
-    console.error('[ERROR]', errorMessage);
+  } else {
+    const errorMessage = 'Invalid message type';
+    console.warn('[WARNING]', errorMessage);
 
     ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
   }
-} else {
-  const errorMessage = 'Invalid message type';
-  console.warn('[WARNING]', errorMessage);
-
-  ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
-}
-
 });
-
-
 
 
 
