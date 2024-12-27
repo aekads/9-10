@@ -65,101 +65,124 @@ wsServer.on('connection', async (ws, req) => {
     broadcastStatus(clientId, 'online', dateTime);
   }
 
-
 ws.on('message', async (message) => {
-  console.log(`\n[INFO] Received message: ${message}`);
+  console.log(`Received message: ${message}`);
 
   let data;
   try {
-    // Parse the incoming message
+    // Parse incoming message
     data = JSON.parse(message);
-    console.log('[INFO] Parsed message successfully.');
   } catch (error) {
-    console.error('[ERROR] Failed to parse message:', error.message);
-    ws.send(JSON.stringify({ status: 'error', message: 'Invalid JSON format.' }));
+    console.error(`Failed to parse message: ${error.message}`);
     return; // Exit if the message isn't valid JSON
   }
 
-  const dateTime = new Date().toISOString();
-  console.log(`[INFO] Current timestamp: ${dateTime}`);
+  const dateTime = new Date().toISOString(); // ISO format for consistency
 
-
-if (data.type === 'video_impression') {
-    console.log('[INFO] Processing "video_impression" message.');
+  if (data.type === 'network') {
+    try {
+      const query = `
+        INSERT INTO network_statuses (client_name, status, updated_at)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (client_name) 
+        DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
+      `;
+      await pool.query(query, [data.clientId, data.status, dateTime]);
+      console.log(`Network status updated for client ${data.clientId}.`);
+    } catch (error) {
+      console.error('Failed to update network status:', error);
+    }
+  } else if (data.type === 'Device_Config') {
+    console.log('Device configuration data received:', data);
 
     try {
-      // Validate required fields and types
-      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
-      for (const field of requiredFields) {
-        if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
-          throw new Error(`Missing or invalid field: ${field}`);
-        }
+      const query = `
+        INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        ON CONFLICT (client_name) DO UPDATE 
+        SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
+      `;
+      await pool.query(query, [
+        data.clientId,
+        data.ram_total,
+        data.ram_used,
+        data.storage_total,
+        data.storage_used,
+        data['Screen-resolution'],
+        data.downstream_bandwidth,
+        data.upstream_bandwidth,
+        data.manufacturer,
+        data.model,
+        data.os_version,
+        data.wifiEnabled,
+        data.wifiMacAddress,
+        data.wifiNetworkSSID,
+        data.wifiSignalStrengthdBm,
+        data.androidId,
+        data.IfSecondScreenIsPresentOnDevice,
+        dateTime,
+      ]);
+
+      console.log(`Device configuration updated in database for client ${data.clientId} at ${dateTime}`);
+    } catch (error) {
+      console.error('Failed to update device configuration in database:', error);
+    }
+  } else if (data.type === 'Screenshot') {
+    try {
+      const query = `
+        INSERT INTO screenshots (id, type, filename, image_url, size)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id) 
+        DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+      `;
+      await pool.query(query, [
+        data.id || data.Id,
+        data.type,
+        data.filename,
+        data.imageUrl,
+        data.size,
+      ]);
+      console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
+    } catch (error) {
+      console.error('Failed to save Screenshot data:', error);
+    }
+  } else if (data.type === 'Screenshot2') {
+    try {
+      const query = `
+        INSERT INTO screenshots (id, filename2, image_url2, size2)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (id) 
+        DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+      `;
+      await pool.query(query, [
+        data.id || data.Id,
+        data.filename2,
+        data.imageUrl2,
+        data.size2,
+      ]);
+      console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
+    } catch (error) {
+      console.error('Failed to save Screenshot2 data:', error);
+    }
+  } else if (data.type === 'video_impression') {
+    try {
+      // Ensure necessary fields are present and valid
+      if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
+        throw new Error('Missing required fields or invalid data types');
       }
 
-      const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
-      const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
-      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
-      const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
+      // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
+      const timestampInSeconds = Math.floor(data.timestamp / 1000);
+      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
 
-      // Check for existing entry in the main table
-      const checkQuery = `
-        SELECT id, count 
-        FROM video_impressions 
-        WHERE uploaded_date = $1 AND video_tag = $2
+      // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
+      const query = `
+        INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
       `;
-      const checkParams = [uploadedDate, data.video_tag];
-      const result = await pool.query(checkQuery, checkParams);
 
-      if (result.rows.length > 0) {
-        // Entry exists; update the count
-        const existingEntry = result.rows[0];
-        const newCount = existingEntry.count + data.count;
-
-        const updateQuery = `
-          UPDATE video_impressions 
-          SET count = $1, duration = duration + $2 
-          WHERE id = $3
-        `;
-        const updateParams = [newCount, data.duration, existingEntry.id];
-        await pool.query(updateQuery, updateParams);
-
-        console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-        ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
-      } else {
-        // Entry does not exist; insert a new record in the main table
-        const insertQuery = `
-          INSERT INTO video_impressions (
-            type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
-          )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-        `;
-        const insertParams = [
-          data.type,
-          data.video_id,
-          data.screen_id,
-          data.device_id,
-          data.name,
-          data.count,
-          data.duration,
-          data.video_tag,
-          timestampInSeconds,
-          uploadedTimeInSeconds,
-          uploadedDate,
-        ];
-        await pool.query(insertQuery, insertParams);
-
-        console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-        ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
-      }
-
-      // Insert into the new table (video_impressions_log)
-      const logInsertQuery = `
-        INSERT INTO video_impressions_log (
-          type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-      `;
-      const logInsertParams = [
+      // Execute the query
+      await pool.query(query, [
         data.type,
         data.video_id,
         data.screen_id,
@@ -167,39 +190,27 @@ if (data.type === 'video_impression') {
         data.name,
         data.count,
         data.duration,
-        data.video_tag,
         timestampInSeconds,
         uploadedTimeInSeconds,
-        uploadedDate,
-      ];
-      await pool.query(logInsertQuery, logInsertParams);
+      ]);
 
-      console.log(`[SUCCESS] Video impression log entry saved for video ID: ${data.video_id}.`);
-
+      console.log(`Video impression data saved for video ID ${data.video_id}.`);
+      // Send success response
+      
     } catch (error) {
       const errorMessage = `Failed to save video impression data: ${error.message}`;
-      console.error('[ERROR]', errorMessage);
+      console.error(errorMessage);
 
-      ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+      // Log the exact error response being sent to the client
+      console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
+
+      
     }
   } else {
-    const errorMessage = 'Invalid message type';
-    console.warn('[WARNING]', errorMessage);
-
-    ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+    console.log(`Unknown message type received: ${data.type}`);
   }
 });
 
-
-
-
-
-
-
-
-
-  
-  
 
 
 
@@ -642,7 +653,7 @@ app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/03w9xv2edj3gqmx24jg2p/AekAdsSignApk_Dec.apk?rlkey=4yaklfbsrp1qplotuhievwnsh&st=wmqfocud&raw=1' }));
+    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/ptdezmf2mtegam2dedoy0/aekads05.apk?rlkey=pmyrwwqy72hz6hd2ynv23t8an&st=m0j0fy36&raw=1' }));
     sendEmail(clientId, 'Update App Saki');
     res.json({ message: `UPDATE APP command sent to client ${clientId}` });
   } else {
@@ -811,42 +822,6 @@ app.post('/set-power-times/:id', async (req, res) => {
 
 
 
-
-// Route to perform master restart on all connected clients
-app.post('/VIDEO_IMPRESSION', (req, res) => {
-  const clientIds = Object.keys(clients);
-  const VIDEO_IMPRESSIONMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
-
-  clientIds.forEach(clientId => {
-    const ws = clients[clientId];
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(VIDEO_IMPRESSIONMessage));
-      console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
-    }
-  });
-
-  // Send an email after master restart command
-  sendEmail('VIDEO_IMPRESSION', 'The VIDEO_IMPRESSION command has been sent to all connected clients.');
-
-  res.json({ message: 'VIDEO_IMPRESSION command sent to all connected clients' });
-});
-
-
-// Schedule the master-restart every minute
-setInterval(() => {
-  const clientIds = Object.keys(clients);
-  const VIDEO_IMPRESSIONMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
-
-  clientIds.forEach(clientId => {
-    const ws = clients[clientId];
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(VIDEO_IMPRESSIONMessage));
-      console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
-    }
-  });
-
-  console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 1800000 ); // 3600000 milliseconds = 1 hour
 
 
 
