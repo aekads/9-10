@@ -96,36 +96,33 @@ ws.on('message', async (message) => {
     console.log('Device configuration data received:', data);
 
     try {
-      const query = `
-        INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-        ON CONFLICT (client_name) DO UPDATE 
-        SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
-      `;
-      await pool.query(query, [
-        data.clientId,
-        data.ram_total,
-        data.ram_used,
-        data.storage_total,
-        data.storage_used,
-        data['Screen-resolution'],
-        data.downstream_bandwidth,
-        data.upstream_bandwidth,
-        data.manufacturer,
-        data.model,
-        data.os_version,
-        data.wifiEnabled,
-        data.wifiMacAddress,
-        data.wifiNetworkSSID,
-        data.wifiSignalStrengthdBm,
-        data.androidId,
-        data.IfSecondScreenIsPresentOnDevice,
-        dateTime,
-      ]);
+      await pool.query(
+        'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at',
+        [
+          clientId,
+          data.ram_total,
+          data.ram_used,
+          data.storage_total,
+          data.storage_used,
+          data['Screen-resolution'],
+          data.downstream_bandwidth,
+          data.upstream_bandwidth,
+          data.manufacturer,
+          data.model,
+          data.os_version,
+          data.wifiEnabled,
+          data.wifiMacAddress,
+          data.wifiNetworkSSID,
+          data.wifiSignalStrengthdBm,
+          data.androidId,
+          data.IfSecondScreenIsPresentOnDevice, // Updated field as integer
+          dateTime,
+        ]
+      );
 
-      console.log(`Device configuration updated in database for client ${data.clientId} at ${dateTime}`);
+      console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
     } catch (error) {
-      console.error('Failed to update device configuration in database:', error);
+      console.error(`Failed to update device configuration in database:`, error);
     }
   } else if (data.type === 'Screenshot') {
     try {
