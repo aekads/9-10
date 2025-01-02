@@ -266,7 +266,7 @@ ws.on('message', async (message) => {
     ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
   }
 });
-});
+
 
 
 
