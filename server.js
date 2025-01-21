@@ -1439,6 +1439,24 @@ app.post('/master-restart', (req, res) => {
 
 
 
+// Schedule the master-restart every minute
+setInterval(() => {
+  const clientIds = Object.keys(clients);
+  const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(restartMessage));
+      console.log(`Restart command sent to client ${clientId}`);
+    }
+  });
+
+  console.log('Scheduled restart command sent to all connected clients');
+}, 600000); // 600000 milliseconds = 10 min
+
+
+
 
 
 
