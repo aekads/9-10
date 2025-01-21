@@ -724,7 +724,19 @@ ws.on('message', async (message) => {
 
 
 
+app.get('/video-impressions', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
+      FROM public.video_impressions;
+    `);
 
+    res.render('video-impressions', { data: result.rows });
+  } catch (err) {
+    console.error('Error fetching data', err);
+    res.status(500).send('Error fetching data');
+  }
+});
 
 
 
