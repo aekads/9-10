@@ -737,10 +737,10 @@ ws.on('message', async (message) => {
 //   }
 // });
 
-
 app.get('/video-impressions', async (req, res) => {
   try {
-    const result = await pool.query(`
+    console.log('Fetching video impressions data...'); // Log when the endpoint is hit
+    const query = `
       SELECT 
         vi.id, 
         vi.type, 
@@ -753,7 +753,7 @@ app.get('/video-impressions', async (req, res) => {
         vi."timestamp", 
         vi.uploaded_time_timestamp, 
         vi.video_tag, 
-        vi.uploaded_date, 
+        vi.uploaded_date,
         s.screenname
       FROM 
         public.video_impressions AS vi
@@ -763,11 +763,13 @@ app.get('/video-impressions', async (req, res) => {
         vi.screen_id = s.screenid
       ORDER BY 
         vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
-    `);
-    console.log('Fetched Data:', result.rows);
+    `;
+
+    const result = await pool.query(query);
+    console.log('Data retrieved successfully:', result.rows.length, 'rows'); // Log the number of rows fetched
     res.render('video-impressions', { data: result.rows });
   } catch (err) {
-    console.error('Error fetching data', err);
+    console.error('Error fetching data:', err); // Log the error details
     res.status(500).send('Error fetching data');
   }
 });
