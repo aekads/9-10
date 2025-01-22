@@ -30,7 +30,6 @@
     <select id="nameFilter">
       <option value="all">All</option>
       <% 
-        // Create a unique list of names dynamically from the data
         const uniqueNames = [...new Set(data.map(row => row.name))];
         uniqueNames.forEach(name => { 
       %>
@@ -46,6 +45,7 @@
         <th>Type</th>
         <th>Video ID</th>
         <th>Screen ID</th>
+        <th>Screen Name</th>
         <th>Device ID</th>
         <th>Name</th>
         <th>Count</th>
@@ -58,7 +58,6 @@
     </thead>
     <tbody id="tableBody">
       <% 
-        // Group rows by name, screen_id, and uploaded_date
         const groupedData = data.reduce((acc, row) => {
           const key = `${row.name}-${row.screen_id}-${row.uploaded_date}`;
           if (!acc[key]) {
@@ -69,7 +68,6 @@
           return acc;
         }, {});
         
-        // Convert grouped data back to an array for rendering
         Object.values(groupedData).forEach(row => { 
       %>
         <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>">
@@ -77,6 +75,7 @@
           <td><%= row.type %></td>
           <td><%= row.video_id %></td>
           <td><%= row.screen_id %></td>
+          <td><%= row.screenname %></td> <!-- Added screenname -->
           <td><%= row.device_id %></td>
           <td><%= row.name %></td>
           <td><%= row.count %></td>
@@ -91,7 +90,6 @@
   </table>
 
   <script>
-    // Dropdown filter logic
     const nameFilter = document.getElementById('nameFilter');
     const tableBody = document.getElementById('tableBody');
     const rows = Array.from(tableBody.querySelectorAll('tr'));
