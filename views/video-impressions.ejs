@@ -4,17 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Video Impressions</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
     }
     th, td {
       border: 1px solid #ddd;
@@ -24,30 +17,25 @@
     th {
       background-color: #f4f4f4;
     }
-    .chart-container, .calendar-container {
-      margin: 20px auto;
-      width: 80%;
-    }
-    h1 {
-      text-align: center;
-      margin-top: 20px;
+    select {
+      padding: 5px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <h1>Video Impressions</h1>
 
-  <!-- Line Chart -->
-  <div class="chart-container">
-    <canvas id="lineChart"></canvas>
-  </div>
+  <!-- Dropdown for selecting name -->
+  <label for="nameFilter">Select Name:</label>
+  <select id="nameFilter">
+    <option value="">--Select Name--</option>
+    <% const uniqueNames = [...new Set(data.map(row => row.name))]; %>
+    <% uniqueNames.forEach(name => { %>
+      <option value="<%= name %>"><%= name %></option>
+    <% }) %>
+  </select>
 
-  <!-- Calendar -->
-  <div class="calendar-container">
-    <div id="calendar"></div>
-  </div>
-
-  <!-- Video Table -->
   <table>
     <thead>
       <tr>
@@ -65,81 +53,62 @@
         <th>Uploaded Date</th>
       </tr>
     </thead>
-    <tbody>
-      <% data.forEach(row => { %>
-        <tr>
-          <td><%= row.id %></td>
-          <td><%= row.type %></td>
-          <td><%= row.video_id %></td>
-          <td><%= row.screen_id %></td>
-          <td><%= row.device_id %></td>
-          <td><%= row.name %></td>
-          <td><%= row.count %></td>
-          <td><%= row.duration %></td>
-          <td><%= row.timestamp %></td>
-          <td><%= row.uploaded_time_timestamp %></td>
-          <td><%= row.video_tag %></td>
-          <td><%= row.uploaded_date %></td>
-        </tr>
-      <% }) %>
+    <tbody id="tableBody">
+      <!-- Data will be dynamically inserted here -->
     </tbody>
   </table>
 
   <script>
-    // Line Chart Data
-    const ctx = document.getElementById('lineChart').getContext('2d');
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: `<%= JSON.stringify(data.map(row => row.uploaded_date)) %>`, // Dates from data
-        datasets: [{
-          label: 'Video Views Count',
-          data: `<%= JSON.stringify(data.map(row => row.count)) %>`, // Count from data
-          borderColor: 'rgba(75, 192, 192, 1)',
-          borderWidth: 2,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-          title: {
-            display: true,
-            text: 'Video Views Over Time'
-          }
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Uploaded Date'
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'View Count'
-            },
-            beginAtZero: true
-          }
-        }
-      }
-    });
+    // Function to filter and display data
+    const data = <%= JSON.stringify(data) %>; // Pass server data to client-side JS
+    const nameFilter = document.getElementById('nameFilter');
+    const tableBody = document.getElementById('tableBody');
 
-    // Calendar Initialization
-    document.addEventListener('DOMContentLoaded', function () {
-      const calendarEl = document.getElementById('calendar');
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        events: `<%= JSON.stringify(data.map(row => ({
-          title: row.name,
-          start: row.uploaded_date
-        }))) %>`
+    nameFilter.addEventListener('change', function() {
+      const selectedName = nameFilter.value;
+      const filteredData = selectedName ? data.filter(row => row.name === selectedName) : data;
+
+      // Group data by screen_id
+      const groupedData = filteredData.reduce((acc, row) => {
+        if (!acc[row.screen_id]) {
+          acc[row.screen_id] = [];
+        }
+        acc[row.screen_id].push(row);
+        return acc;
+      }, {});
+
+      // Clear previous table data
+      tableBody.innerHTML = '';
+
+      // Render grouped data
+      Object.keys(groupedData).forEach(screen_id => {
+        const screenData = groupedData[screen_id];
+        let nameCount = {}; // To keep track of name count for each screen_id
+
+        screenData.forEach(row => {
+          nameCount[row.name] = (nameCount[row.name] || 0) + 1;
+        });
+
+        // Render rows for this screen_id
+        screenData.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${row.id}</td>
+            <td>${row.type}</td>
+            <td>${row.video_id}</td>
+            <td>${row.screen_id}</td>
+            <td>${row.device_id}</td>
+            <td>${row.name}</td>
+            <td>${nameCount[row.name]}</td>
+            <td>${row.duration}</td>
+            <td>${row.timestamp}</td>
+            <td>${row.uploaded_time_timestamp}</td>
+            <td>${row.video_tag}</td>
+            <td>${row.uploaded_date}</td>
+          `;
+          tableBody.appendChild(tr);
+        });
       });
-      calendar.render();
     });
   </script>
 </body>
