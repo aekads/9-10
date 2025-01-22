@@ -764,7 +764,7 @@ app.get('/video-impressions', async (req, res) => {
       ORDER BY 
         vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
     `);
-
+    console.log('Fetched Data:', result.rows);
     res.render('video-impressions', { data: result.rows });
   } catch (err) {
     console.error('Error fetching data', err);
