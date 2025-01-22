@@ -60,7 +60,7 @@
 
   <script>
     // Function to filter and display data
-    const data = <%= JSON.stringify(data) %>; // Pass server data to client-side JS
+    const data = `<%- JSON.stringify(data) %>`; // Use <%- instead of <%= to output raw JSON
     const nameFilter = document.getElementById('nameFilter');
     const tableBody = document.getElementById('tableBody');
 
