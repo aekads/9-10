@@ -57,7 +57,21 @@
       </tr>
     </thead>
     <tbody id="tableBody">
-      <% data.forEach(row => { %>
+      <% 
+        // Group rows by name, screen_id, and uploaded_date
+        const groupedData = data.reduce((acc, row) => {
+          const key = `${row.name}-${row.screen_id}-${row.uploaded_date}`;
+          if (!acc[key]) {
+            acc[key] = { ...row, count: parseInt(row.count, 10) };
+          } else {
+            acc[key].count += parseInt(row.count, 10);
+          }
+          return acc;
+        }, {});
+        
+        // Convert grouped data back to an array for rendering
+        Object.values(groupedData).forEach(row => { 
+      %>
         <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>">
           <td><%= row.id %></td>
           <td><%= row.type %></td>
