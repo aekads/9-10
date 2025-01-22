@@ -1465,7 +1465,7 @@ setInterval(() => {
   });
 
   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 600000); // 600000 milliseconds = 10 min
+}, 420000); // 600000 milliseconds = 10 min
 
 
 
