@@ -91,10 +91,10 @@
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: <%= JSON.stringify(data.map(row => row.uploaded_date)) %>, // Dates from data
+        labels: `<%= JSON.stringify(data.map(row => row.uploaded_date)) %>`, // Dates from data
         datasets: [{
           label: 'Video Views Count',
-          data: <%= JSON.stringify(data.map(row => row.count)) %>, // Count from data
+          data: `<%= JSON.stringify(data.map(row => row.count)) %>`, // Count from data
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 2,
           fill: false
@@ -134,10 +134,10 @@
       const calendarEl = document.getElementById('calendar');
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: <%= JSON.stringify(data.map(row => ({
+        events: `<%= JSON.stringify(data.map(row => ({
           title: row.name,
           start: row.uploaded_date
-        }))) %>
+        }))) %>`
       });
       calendar.render();
     });
