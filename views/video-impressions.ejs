@@ -91,28 +91,18 @@
   </table>
 
   <script>
-    // Log when the script is loaded
-    console.log('Video Impressions page loaded');
-  
     // Dropdown filter logic
     const nameFilter = document.getElementById('nameFilter');
     const tableBody = document.getElementById('tableBody');
     const rows = Array.from(tableBody.querySelectorAll('tr'));
-  
-    console.log('Total rows in table:', rows.length); // Log the number of table rows
-  
+
     nameFilter.addEventListener('change', () => {
       const selectedName = nameFilter.value;
-      console.log('Filter selected:', selectedName); // Log the selected filter value
-  
       rows.forEach(row => {
         const rowName = row.dataset.name;
-        const isVisible = (selectedName === 'all' || rowName === selectedName);
-        row.style.display = isVisible ? '' : 'none';
-        console.log(`Row with name "${rowName}" visibility: ${isVisible}`); // Log the visibility of each row
+        row.style.display = (selectedName === 'all' || rowName === selectedName) ? '' : 'none';
       });
     });
   </script>
-  
 </body>
 </html>
