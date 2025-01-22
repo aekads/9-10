@@ -722,12 +722,47 @@ ws.on('message', async (message) => {
   
 
 
+// app.get('/video-impressions', async (req, res) => {
+//   try {
+//     const result = await pool.query(`
+//       SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
+//       FROM public.video_impressions
+//       ORDER BY uploaded_date DESC; -- Change DESC to ASC for ascending order
+//     `);
+
+//     res.render('video-impressions', { data: result.rows });
+//   } catch (err) {
+//     console.error('Error fetching data', err);
+//     res.status(500).send('Error fetching data');
+//   }
+// });
+
+
 app.get('/video-impressions', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
-      FROM public.video_impressions
-      ORDER BY uploaded_date DESC; -- Change DESC to ASC for ascending order
+      SELECT 
+        vi.id, 
+        vi.type, 
+        vi.video_id, 
+        vi.screen_id, 
+        vi.device_id, 
+        vi.name, 
+        vi.count, 
+        vi.duration, 
+        vi."timestamp", 
+        vi.uploaded_time_timestamp, 
+        vi.video_tag, 
+        vi.uploaded_date, 
+        s.screenname
+      FROM 
+        public.video_impressions AS vi
+      LEFT JOIN 
+        public.screens AS s
+      ON 
+        vi.screen_id = s.screenid
+      ORDER BY 
+        vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
     `);
 
     res.render('video-impressions', { data: result.rows });
@@ -736,8 +771,6 @@ app.get('/video-impressions', async (req, res) => {
     res.status(500).send('Error fetching data');
   }
 });
-
-
 
 
 
