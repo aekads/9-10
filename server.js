@@ -722,13 +722,12 @@ ws.on('message', async (message) => {
   
 
 
-
-
 app.get('/video-impressions', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
-      FROM public.video_impressions;
+      FROM public.video_impressions
+      ORDER BY uploaded_date DESC; -- Change DESC to ASC for ascending order
     `);
 
     res.render('video-impressions', { data: result.rows });
