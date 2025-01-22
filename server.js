@@ -760,7 +760,7 @@ app.get('/video-impressions', async (req, res) => {
       LEFT JOIN 
         public.screens AS s
       ON 
-            vi.screen_id::integer = s.screenid  -- Explicit cast to integer
+           vi.screen_id::text= s.screenid::integer  -- Cast both to compatible type
       ORDER BY 
         vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
     `;
