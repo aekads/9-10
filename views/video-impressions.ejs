@@ -17,24 +17,27 @@
     th {
       background-color: #f4f4f4;
     }
-    select {
-      padding: 5px;
-      margin-bottom: 10px;
+    .controls {
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
   <h1>Video Impressions</h1>
 
-  <!-- Dropdown for selecting name -->
-  <label for="nameFilter">Select Name:</label>
-  <select id="nameFilter">
-    <option value="">--Select Name--</option>
-    <% const uniqueNames = [...new Set(data.map(row => row.name))]; %>
-    <% uniqueNames.forEach(name => { %>
-      <option value="<%= name %>"><%= name %></option>
-    <% }) %>
-  </select>
+  <div class="controls">
+    <label for="nameFilter">Filter by Name:</label>
+    <select id="nameFilter">
+      <option value="all">All</option>
+      <% 
+        // Create a unique list of names dynamically from the data
+        const uniqueNames = [...new Set(data.map(row => row.name))];
+        uniqueNames.forEach(name => { 
+      %>
+        <option value="<%= name %>"><%= name %></option>
+      <% }) %>
+    </select>
+  </div>
 
   <table>
     <thead>
@@ -54,60 +57,36 @@
       </tr>
     </thead>
     <tbody id="tableBody">
-      <!-- Data will be dynamically inserted here -->
+      <% data.forEach(row => { %>
+        <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>">
+          <td><%= row.id %></td>
+          <td><%= row.type %></td>
+          <td><%= row.video_id %></td>
+          <td><%= row.screen_id %></td>
+          <td><%= row.device_id %></td>
+          <td><%= row.name %></td>
+          <td><%= row.count %></td>
+          <td><%= row.duration %></td>
+          <td><%= row.timestamp %></td>
+          <td><%= row.uploaded_time_timestamp %></td>
+          <td><%= row.video_tag %></td>
+          <td><%= row.uploaded_date %></td>
+        </tr>
+      <% }) %>
     </tbody>
   </table>
 
   <script>
-    // Function to filter and display data
-    const data = `<%- JSON.stringify(data) %>`; // Use <%- instead of <%= to output raw JSON
+    // Dropdown filter logic
     const nameFilter = document.getElementById('nameFilter');
     const tableBody = document.getElementById('tableBody');
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
 
-    nameFilter.addEventListener('change', function() {
+    nameFilter.addEventListener('change', () => {
       const selectedName = nameFilter.value;
-      const filteredData = selectedName ? data.filter(row => row.name === selectedName) : data;
-
-      // Group data by screen_id
-      const groupedData = filteredData.reduce((acc, row) => {
-        if (!acc[row.screen_id]) {
-          acc[row.screen_id] = [];
-        }
-        acc[row.screen_id].push(row);
-        return acc;
-      }, {});
-
-      // Clear previous table data
-      tableBody.innerHTML = '';
-
-      // Render grouped data
-      Object.keys(groupedData).forEach(screen_id => {
-        const screenData = groupedData[screen_id];
-        let nameCount = {}; // To keep track of name count for each screen_id
-
-        screenData.forEach(row => {
-          nameCount[row.name] = (nameCount[row.name] || 0) + 1;
-        });
-
-        // Render rows for this screen_id
-        screenData.forEach(row => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${row.id}</td>
-            <td>${row.type}</td>
-            <td>${row.video_id}</td>
-            <td>${row.screen_id}</td>
-            <td>${row.device_id}</td>
-            <td>${row.name}</td>
-            <td>${nameCount[row.name]}</td>
-            <td>${row.duration}</td>
-            <td>${row.timestamp}</td>
-            <td>${row.uploaded_time_timestamp}</td>
-            <td>${row.video_tag}</td>
-            <td>${row.uploaded_date}</td>
-          `;
-          tableBody.appendChild(tr);
-        });
+      rows.forEach(row => {
+        const rowName = row.dataset.name;
+        row.style.display = (selectedName === 'all' || rowName === selectedName) ? '' : 'none';
       });
     });
   </script>
