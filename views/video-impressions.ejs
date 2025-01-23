@@ -73,11 +73,19 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <!-- <th>ID</th> -->
+             <th>City</th>
+             <th>Apartment</th>
+             <th>Total Households</th>
+             <th>Total Screens</th>
             <th>Screen ID</th>
-            <th>Screen Name</th>
-            <th>Name</th>
-            <th>Count</th>
+            <th>Unique Screen ID</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Slot Length in Sec</th>
+            <th>Total Impressions to deliver for duration</th>
+            <th>Total Impressions delivered during report period</th>
+            <th>Surplus / Balance</th>
             <th>Uploaded Date</th>
           </tr>
         </thead>
@@ -92,19 +100,27 @@
               }
               return acc;
             }, {});
-
+        
             Object.values(groupedData).forEach(row => { 
+              const surplus = 720 - row.count; // Calculate the Surplus value
           %>
             <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>" data-uploaded-date="<%= row.uploaded_date %>">
-              <td><%= row.id %></td>
+              <td><%= row.city %></td>
+              <td><%= row.area %></td>
+              <td><%= row.reach %></td> <!-- Placeholder for Total Households -->
               <td><%= row.screen_id %></td>
               <td><%= row.screenname %></td>
-              <td><%= row.name %></td>
+              <td>06:00</td> <!-- Start Time -->
+              <td>23:59</td> <!-- End Time -->
+              <td>10</td> <!-- Slot Length in Sec -->
+              <td>720</td> <!-- Total Impressions to deliver -->
               <td><%= row.count %></td>
+              <td><%= surplus %></td> <!-- Surplus value -->
               <td><%= row.uploaded_date %></td>
             </tr>
           <% }) %>
         </tbody>
+        
       </table>
     </div>
   <% }) %>

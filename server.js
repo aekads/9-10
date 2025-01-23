@@ -755,11 +755,13 @@ app.get('/video-impressions', async (req, res) => {
         vi.video_tag, 
         vi.uploaded_date,
         s.screenname,
-        s.area
+        s.area,
+        s.city,
+        s.reach
       FROM 
         public.video_impressions AS vi
       LEFT JOIN 
-        public.screens AS s
+        public.screen_proposal AS s
       ON 
            vi.screen_id= s.screenid  -- Cast both to compatible type
       ORDER BY 
