@@ -624,7 +624,7 @@ ws.on('message', async (message) => {
         FROM video_impressions 
         WHERE uploaded_date = $1 AND video_tag = $2 AND screen_id = $3
     `;
-        const checkParams = [uploadedDate, data.video_tag];
+        const checkParams = [uploadedDate, data.video_tag, data.screen_id]; // Add the third parameter
         const result = await pool.query(checkQuery, checkParams);
 
         if (result.rows.length > 0) {
