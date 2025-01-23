@@ -755,6 +755,7 @@ app.get('/video-impressions', async (req, res) => {
         vi.video_tag, 
         vi.uploaded_date,
         s.screenname
+        s.area
       FROM 
         public.video_impressions AS vi
       LEFT JOIN 
