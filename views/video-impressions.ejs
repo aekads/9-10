@@ -86,7 +86,7 @@
             <th>Total Impressions to deliver for duration</th>
             <th>Total Impressions delivered during report period</th>
             <th>Surplus / Balance</th>
-            <th>Uploaded Date</th>
+            <!-- <th>Uploaded Date</th> -->
           </tr>
         </thead>
         <tbody>
@@ -108,6 +108,7 @@
               <td><%= row.city %></td>
               <td><%= row.area %></td>
               <td><%= row.reach %></td> <!-- Placeholder for Total Households -->
+              <td>1</td>
               <td><%= row.screen_id %></td>
               <td><%= row.screenname %></td>
               <td>06:00</td> <!-- Start Time -->
@@ -116,7 +117,7 @@
               <td>720</td> <!-- Total Impressions to deliver -->
               <td><%= row.count %></td>
               <td><%= surplus %></td> <!-- Surplus value -->
-              <td><%= row.uploaded_date %></td>
+              <!-- <td><%= row.uploaded_date %></td> -->
             </tr>
           <% }) %>
         </tbody>
