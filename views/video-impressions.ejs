@@ -102,7 +102,7 @@
             }, {});
         
             Object.values(groupedData).forEach(row => { 
-              const surplus = 720 - row.count; // Calculate the Surplus value
+              const surplus = row.count - 720 ; // Calculate the Surplus value
           %>
             <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>" data-uploaded-date="<%= row.uploaded_date %>">
               <td><%= row.city %></td>
