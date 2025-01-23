@@ -604,45 +604,84 @@ ws.on('message', async (message) => {
   } else if (data.type === 'video_impression') {
     console.log('[INFO] Processing "video_impression" message.');
 
-    try {
-        // Validate required fields and types
-        const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
-        for (const field of requiredFields) {
-            if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
-                throw new Error(`Missing or invalid field: ${field}`);
-            }
-        }
+    // try {
+    //     // Validate required fields and types
+    //     const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
+    //     for (const field of requiredFields) {
+    //         if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+    //             throw new Error(`Missing or invalid field: ${field}`);
+    //         }
+    //     }
 
-        const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
-        const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
-        const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
-        const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
+    //     const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
+    //     const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+    //     const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
+    //     const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
 
-        // Check for existing entry in the main table
-        const checkQuery = `
-            SELECT id, count 
-            FROM video_impressions 
-            WHERE uploaded_date = $1 AND video_tag = $2
-        `;
-        const checkParams = [uploadedDate, data.video_tag];
-        const result = await pool.query(checkQuery, checkParams);
+    //     // Check for existing entry in the main table
+    //     const checkQuery = `
+    //         SELECT id, count 
+    //         FROM video_impressions 
+    //         WHERE uploaded_date = $1 AND video_tag = $2
+    //     `;
+    //     const checkParams = [uploadedDate, data.video_tag];
+    //     const result = await pool.query(checkQuery, checkParams);
 
-        if (result.rows.length > 0) {
-            // Entry exists; update the count
-            const existingEntry = result.rows[0];
-            const newCount = existingEntry.count + data.count;
+    //     if (result.rows.length > 0) {
+    //         // Entry exists; update the count
+    //         const existingEntry = result.rows[0];
+    //         const newCount = existingEntry.count + data.count;
 
-            const updateQuery = `
-                UPDATE video_impressions 
-                SET count = $1, duration = $2 
-                WHERE id = $3
-            `;
-            const updateParams = [newCount, data.duration, existingEntry.id];
-            await pool.query(updateQuery, updateParams);
+    //         const updateQuery = `
+    //             UPDATE video_impressions 
+    //             SET count = $1, duration = $2 
+    //             WHERE id = $3
+    //         `;
+    //         const updateParams = [newCount, data.duration, existingEntry.id];
+    //         await pool.query(updateQuery, updateParams);
 
-            console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-            ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
-        } else {
+    //         console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
+    //         ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+    //     } 
+    {
+      // Validate required fields and types
+      const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
+      for (const field of requiredFields) {
+          if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+              throw new Error(`Missing or invalid field: ${field}`);
+          }
+      }
+  
+      const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
+      const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+      const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
+      const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
+  
+      // Check for existing entry in the main table
+      const checkQuery = `
+          SELECT id, count 
+          FROM video_impressions 
+          WHERE uploaded_date = $1 AND video_tag = $2 AND screen_id = $3
+      `;
+      const checkParams = [uploadedDate, data.video_tag, data.screen_id];
+      const result = await pool.query(checkQuery, checkParams);
+  
+      if (result.rows.length > 0) {
+          // Entry exists; update the count
+          const existingEntry = result.rows[0];
+          const newCount = existingEntry.count + data.count;
+  
+          const updateQuery = `
+              UPDATE video_impressions 
+              SET count = $1, duration = $2 
+              WHERE id = $3
+          `;
+          const updateParams = [newCount, data.duration, existingEntry.id];
+          await pool.query(updateQuery, updateParams);
+  
+          console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, screen_id: ${data.screen_id}, uploaded_date: ${uploadedDate}.`);
+          ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+      }else {
             // Entry does not exist; insert a new record in the main table
             const insertQuery = `
                 INSERT INTO video_impressions (
