@@ -754,7 +754,7 @@ app.get('/video-impressions', async (req, res) => {
         vi.uploaded_time_timestamp, 
         vi.video_tag, 
         vi.uploaded_date,
-        s.screenname
+        s.screenname,
         s.area
       FROM 
         public.video_impressions AS vi
