@@ -8,6 +8,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-bottom: 20px;
     }
     th, td {
       border: 1px solid #ddd;
@@ -25,6 +26,11 @@
     }
     .controls input, .controls select {
       margin-right: 15px;
+    }
+    .area-heading {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -50,65 +56,87 @@
     <input type="date" id="toDate">
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Screen ID</th>
-        <th>Screen Name</th>
-        <th>property Name</th>
-        <th>Name</th>
-        <th>Count</th>
-        <th>Uploaded Date</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <% 
-        const groupedData = data.reduce((acc, row) => {
-          const key = `${row.name}-${row.screen_id}-${row.uploaded_date}`;
-          if (!acc[key]) {
-            acc[key] = { ...row, count: parseInt(row.count, 10) };
-          } else {
-            acc[key].count += parseInt(row.count, 10);
-          }
-          return acc;
-        }, {});
-        
-        Object.values(groupedData).forEach(row => { 
-      %>
-        <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>" data-uploaded-date="<%= row.uploaded_date %>">
-          <td><%= row.id %></td>
-          <td><%= row.screen_id %></td>
-          <td><%= row.screenname %></td>
-          <td><%= row.area %></td>
-          <td><%= row.name %></td>
-          <td><%= row.count %></td>
-          <td><%= row.uploaded_date %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+  <% 
+    // Group data by area
+    const dataByArea = data.reduce((acc, row) => {
+      if (!acc[row.area]) {
+        acc[row.area] = [];
+      }
+      acc[row.area].push(row);
+      return acc;
+    }, {});
+
+    Object.entries(dataByArea).forEach(([area, rows]) => { 
+  %>
+    <div class="area-group">
+      <div class="area-heading">Property Name: <%= area %></div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Screen ID</th>
+            <th>Screen Name</th>
+            <th>Name</th>
+            <th>Count</th>
+            <th>Uploaded Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+            const groupedData = rows.reduce((acc, row) => {
+              const key = `${row.name}-${row.screen_id}-${row.uploaded_date}`;
+              if (!acc[key]) {
+                acc[key] = { ...row, count: parseInt(row.count, 10) };
+              } else {
+                acc[key].count += parseInt(row.count, 10);
+              }
+              return acc;
+            }, {});
+
+            Object.values(groupedData).forEach(row => { 
+          %>
+            <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>" data-uploaded-date="<%= row.uploaded_date %>">
+              <td><%= row.id %></td>
+              <td><%= row.screen_id %></td>
+              <td><%= row.screenname %></td>
+              <td><%= row.name %></td>
+              <td><%= row.count %></td>
+              <td><%= row.uploaded_date %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% }) %>
 
   <script>
     const nameFilter = document.getElementById('nameFilter');
     const fromDate = document.getElementById('fromDate');
     const toDate = document.getElementById('toDate');
-    const tableBody = document.getElementById('tableBody');
-    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    const tableGroups = Array.from(document.querySelectorAll('.area-group'));
 
     function applyFilters() {
       const selectedName = nameFilter.value;
       const fromDateValue = fromDate.value;
       const toDateValue = toDate.value;
 
-      rows.forEach(row => {
-        const rowName = row.dataset.name;
-        const rowDate = row.dataset.uploadedDate;
-        const showByName = selectedName === 'all' || rowName === selectedName;
-        const showByDate = (!fromDateValue || new Date(rowDate) >= new Date(fromDateValue)) &&
-                           (!toDateValue || new Date(rowDate) <= new Date(toDateValue));
+      tableGroups.forEach(group => {
+        const rows = group.querySelectorAll('tbody tr');
+        let groupVisible = false;
 
-        row.style.display = showByName && showByDate ? '' : 'none';
+        rows.forEach(row => {
+          const rowName = row.dataset.name;
+          const rowDate = row.dataset.uploadedDate;
+          const showByName = selectedName === 'all' || rowName === selectedName;
+          const showByDate = (!fromDateValue || new Date(rowDate) >= new Date(fromDateValue)) &&
+                             (!toDateValue || new Date(rowDate) <= new Date(toDateValue));
+          
+          const isVisible = showByName && showByDate;
+          row.style.display = isVisible ? '' : 'none';
+          if (isVisible) groupVisible = true;
+        });
+
+        group.style.display = groupVisible ? '' : 'none';
       });
     }
 
