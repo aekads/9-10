@@ -1502,7 +1502,7 @@ setInterval(() => {
   });
 
   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 1800000 ); // 1800000  milliseconds = 30 min
+}, 600000); // 1800000  milliseconds = 30 min
 
 
 
