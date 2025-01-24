@@ -130,47 +130,61 @@
     const tableGroups = Array.from(document.querySelectorAll('.area-group'));
 
     function applyFilters() {
-      const selectedName = nameFilter.value;
-      const fromDateValue = fromDate.value;
-      const toDateValue = toDate.value;
+  const selectedName = nameFilter.value;
+  const fromDateValue = fromDate.value;
+  const toDateValue = toDate.value;
 
-      tableGroups.forEach(group => {
-        const rows = group.querySelectorAll('tbody tr');
-        const groupedData = {};
+  tableGroups.forEach(group => {
+    const rows = Array.from(group.querySelectorAll('tbody tr'));
+    const groupedRows = {};
 
-        rows.forEach(row => {
-          const rowName = row.dataset.name;
-          const rowDate = row.dataset.uploadedDate;
-          const rowScreenId = row.dataset.screenId;
+    // Group rows by Screen ID and Uploaded Date
+    rows.forEach(row => {
+      const rowName = row.dataset.name;
+      const rowDate = row.dataset.uploadedDate;
+      const screenId = row.dataset.screenId;
+      const key = `${screenId}-${rowName}`; // Group by Screen ID and Name
 
-          if (!groupedData[rowScreenId]) {
-            groupedData[rowScreenId] = {
-              count: 0,
-              element: row
-            };
-          }
+      const showByName = selectedName === 'all' || rowName === selectedName;
+      const showByDate =
+        (!fromDateValue || new Date(rowDate) >= new Date(fromDateValue)) &&
+        (!toDateValue || new Date(rowDate) <= new Date(toDateValue));
+      
+      if (showByName && showByDate) {
+        if (!groupedRows[key]) {
+          groupedRows[key] = {
+            row,
+            count: parseInt(row.querySelector('td:nth-child(11)').innerText, 10), // Total Impressions Delivered
+          };
+        } else {
+          // Update count and merge rows
+          groupedRows[key].count += parseInt(row.querySelector('td:nth-child(11)').innerText, 10);
+        }
+      }
+    });
 
-          groupedData[rowScreenId].count += parseInt(row.querySelector('td:nth-child(11)').textContent, 10);
+    // Update the DOM to show consolidated rows
+    rows.forEach(row => (row.style.display = 'none')); // Hide all rows initially
+    let groupVisible = false;
 
-          const showByName = selectedName === 'all' || rowName === selectedName;
-          const showByDate = (!fromDateValue || new Date(rowDate) >= new Date(fromDateValue)) &&
-                             (!toDateValue || new Date(rowDate) <= new Date(toDateValue));
+    Object.values(groupedRows).forEach(({ row, count }) => {
+      const surplusCell = row.querySelector('td:nth-child(12)'); // Surplus cell
+      const impressionsDeliveredCell = row.querySelector('td:nth-child(11)'); // Total Impressions Delivered cell
+      impressionsDeliveredCell.innerText = count;
+      surplusCell.innerText = count - 720; // Update surplus
 
-          row.style.display = showByName && showByDate ? '' : 'none';
-        });
+      row.style.display = ''; // Show consolidated row
+      groupVisible = true;
+    });
 
-        Object.values(groupedData).forEach(data => {
-          const surplus = data.count - 720;
-          const countCell = data.element.querySelector('td:nth-child(11)');
-          const surplusCell = data.element.querySelector('td:nth-child(12)');
-          countCell.textContent = data.count;
-          surplusCell.textContent = surplus;
-        });
-      });
-    }
+    group.style.display = groupVisible ? '' : 'none';
+  });
+}
 
-    nameFilter.addEventListener('change', applyFilters);
-    applyDateFilters.addEventListener('click', applyFilters);
+nameFilter.addEventListener('change', applyFilters);
+fromDate.addEventListener('input', applyFilters);
+toDate.addEventListener('input', applyFilters);
+
   </script>
 </body>
 </html>
