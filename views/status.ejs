@@ -128,7 +128,8 @@
               <% } %>
                <td>
                 <button onclick="restartClient('<%= clientId %>')">Restart</button>
-           
+                <button onclick="SHOW_SCREEN_ID('<%= clientId %>')">SHOW_SCREEN_ID</button> 
+                <button onclick="HIDE_SCREEN_ID('<%= clientId %>')">HIDE_SCREEN_ID</button> 
                 <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
                 <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
                 <button onclick="muteClient('<%= clientId %>')">Mute</button>
@@ -258,7 +259,18 @@ function CLEAR_TIME(clientId) {
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-  
+    function HIDE_SCREEN_ID(clientId) {
+      fetch(`/HIDE_SCREEN_ID/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function SHOW_SCREEN_ID(clientId) {
+      fetch(`/SHOW_SCREEN_ID/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
     function updateApp(clientId) {
       fetch(`/update-app/${clientId}`, { method: 'POST' })
         .then(response => response.json())
