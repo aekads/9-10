@@ -54,10 +54,10 @@
 
     <label for="toDate">To:</label>
     <input type="date" id="toDate">
+    <button id="applyDateFilters">Apply Date Filters</button>
   </div>
 
   <% 
-    // Group data by area
     const dataByArea = data.reduce((acc, row) => {
       if (!acc[row.area]) {
         acc[row.area] = [];
@@ -73,11 +73,10 @@
       <table>
         <thead>
           <tr>
-            <!-- <th>ID</th> -->
-             <th>City</th>
-             <th>Apartment</th>
-             <th>Total Households</th>
-             <th>Total Screens</th>
+            <th>City</th>
+            <th>Apartment</th>
+            <th>Total Households</th>
+            <th>Total Screens</th>
             <th>Screen ID</th>
             <th>Unique Screen ID</th>
             <th>Start Time</th>
@@ -86,13 +85,12 @@
             <th>Total Impressions to deliver for duration</th>
             <th>Total Impressions delivered during report period</th>
             <th>Surplus / Balance</th>
-            <!-- <th>Uploaded Date</th> -->
           </tr>
         </thead>
         <tbody>
           <% 
             const groupedData = rows.reduce((acc, row) => {
-              const key = `${row.name}-${row.screen_id}-${row.uploaded_date}`;
+              const key = `${row.name}-${row.screen_id}`;
               if (!acc[key]) {
                 acc[key] = { ...row, count: parseInt(row.count, 10) };
               } else {
@@ -100,28 +98,26 @@
               }
               return acc;
             }, {});
-        
-            Object.values(groupedData).forEach(row => { 
-              const surplus = row.count - 720 ; // Calculate the Surplus value
+
+            Object.values(groupedData).forEach(row => {
+              const surplus = row.count - 720;
           %>
             <tr data-name="<%= row.name %>" data-screen-id="<%= row.screen_id %>" data-uploaded-date="<%= row.uploaded_date %>">
               <td><%= row.city %></td>
               <td><%= row.area %></td>
-              <td><%= row.reach %></td> <!-- Placeholder for Total Households -->
+              <td><%= row.reach %></td>
               <td>1</td>
               <td><%= row.screen_id %></td>
               <td><%= row.screenname %></td>
-              <td>06:00</td> <!-- Start Time -->
-              <td>23:59</td> <!-- End Time -->
-              <td>10</td> <!-- Slot Length in Sec -->
-              <td>720</td> <!-- Total Impressions to deliver -->
+              <td>06:00</td>
+              <td>23:59</td>
+              <td>10</td>
+              <td>720</td>
               <td><%= row.count %></td>
-              <td><%= surplus %></td> <!-- Surplus value -->
-              <!-- <td><%= row.uploaded_date %></td> -->
+              <td><%= surplus %></td>
             </tr>
           <% }) %>
         </tbody>
-        
       </table>
     </div>
   <% }) %>
@@ -130,6 +126,7 @@
     const nameFilter = document.getElementById('nameFilter');
     const fromDate = document.getElementById('fromDate');
     const toDate = document.getElementById('toDate');
+    const applyDateFilters = document.getElementById('applyDateFilters');
     const tableGroups = Array.from(document.querySelectorAll('.area-group'));
 
     function applyFilters() {
@@ -139,27 +136,41 @@
 
       tableGroups.forEach(group => {
         const rows = group.querySelectorAll('tbody tr');
-        let groupVisible = false;
+        const groupedData = {};
 
         rows.forEach(row => {
           const rowName = row.dataset.name;
           const rowDate = row.dataset.uploadedDate;
+          const rowScreenId = row.dataset.screenId;
+
+          if (!groupedData[rowScreenId]) {
+            groupedData[rowScreenId] = {
+              count: 0,
+              element: row
+            };
+          }
+
+          groupedData[rowScreenId].count += parseInt(row.querySelector('td:nth-child(11)').textContent, 10);
+
           const showByName = selectedName === 'all' || rowName === selectedName;
           const showByDate = (!fromDateValue || new Date(rowDate) >= new Date(fromDateValue)) &&
                              (!toDateValue || new Date(rowDate) <= new Date(toDateValue));
-          
-          const isVisible = showByName && showByDate;
-          row.style.display = isVisible ? '' : 'none';
-          if (isVisible) groupVisible = true;
+
+          row.style.display = showByName && showByDate ? '' : 'none';
         });
 
-        group.style.display = groupVisible ? '' : 'none';
+        Object.values(groupedData).forEach(data => {
+          const surplus = data.count - 720;
+          const countCell = data.element.querySelector('td:nth-child(11)');
+          const surplusCell = data.element.querySelector('td:nth-child(12)');
+          countCell.textContent = data.count;
+          surplusCell.textContent = surplus;
+        });
       });
     }
 
     nameFilter.addEventListener('change', applyFilters);
-    fromDate.addEventListener('input', applyFilters);
-    toDate.addEventListener('input', applyFilters);
+    applyDateFilters.addEventListener('click', applyFilters);
   </script>
 </body>
 </html>
