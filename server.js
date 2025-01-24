@@ -1075,6 +1075,53 @@ app.post('/restart-client/:id', (req, res) => {
   }
 });
 
+
+
+
+
+// HIDE_SCREEN_ID command
+app.post('/HIDE_SCREEN_ID/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'HIDE_SCREEN_ID', message: 'HIDE_SCREEN_ID' }));
+    sendEmail(clientId, 'HIDE_SCREEN_ID');
+    res.json({ message: `HIDE_SCREEN_ID command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+// SHOW_SCREEN_ID command
+app.post('/SHOW_SCREEN_ID/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'SHOW_SCREEN_ID', message: 'SHOW_SCREEN_ID' }));
+    sendEmail(clientId, 'SHOW_SCREEN_ID');
+    res.json({ message: `SHOW_SCREEN_ID command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 app.post('/CLEAR_TIME/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
