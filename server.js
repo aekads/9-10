@@ -1020,8 +1020,8 @@ app.get('/status', isAuthenticated1, async (req, res) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-        user: 'aekads.otp@gmail.com',
-        pass: 'ieef ozwv pfny gykx'
+    user: 'aekads.otp@gmail.com',
+    pass: "nait yiag ebyg cxwk",
   }
 });
 
