@@ -1535,21 +1535,21 @@ app.post('/master-restart', (req, res) => {
 
 
 
-// Schedule the master-restart every minute
-setInterval(() => {
-  const clientIds = Object.keys(clients);
-  const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+// // Schedule the master-restart every minute
+// setInterval(() => {
+//   const clientIds = Object.keys(clients);
+//   const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
 
-  clientIds.forEach(clientId => {
-    const ws = clients[clientId];
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(restartMessage));
-      console.log(`Restart command sent to client ${clientId}`);
-    }
-  });
+//   clientIds.forEach(clientId => {
+//     const ws = clients[clientId];
+//     if (ws && ws.readyState === WebSocket.OPEN) {
+//       ws.send(JSON.stringify(restartMessage));
+//       console.log(`Restart command sent to client ${clientId}`);
+//     }
+//   });
 
-  console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 600000); // 1800000  milliseconds = 30 min
+//   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
+// }, 600000); // 1800000  milliseconds = 30 min
 
 
 
