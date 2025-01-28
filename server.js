@@ -1262,18 +1262,18 @@ app.post('/BRIGHTNESS_DOWN/:id', (req, res) => {
 });
 
 // Update App Saki command
-app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
-  const clientId = req.params.id;
-  const ws = clients[clientId];
+// app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
+//   const clientId = req.params.id;
+//   const ws = clients[clientId];
 
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/n0a6rus2kj5b8qw3z9lkx/AekAdDisply_V_5_3_20Jan.apk?rlkey=0fba4ixdhj6tz6tk6um164efz&st=wmend7i8&raw=1' }));
-    sendEmail(clientId, 'Update App Saki');
-    res.json({ message: `UPDATE APP command sent to client ${clientId}` });
-  } else {
-    res.status(404).json({ message: `Client ${clientId} is not connected` });
-  }
-});
+//   if (ws && ws.readyState === WebSocket.OPEN) {
+//     ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/n0a6rus2kj5b8qw3z9lkx/AekAdDisply_V_5_3_20Jan.apk?rlkey=0fba4ixdhj6tz6tk6um164efz&st=wmend7i8&raw=1' }));
+//     sendEmail(clientId, 'Update App Saki');
+//     res.json({ message: `UPDATE APP command sent to client ${clientId}` });
+//   } else {
+//     res.status(404).json({ message: `Client ${clientId} is not connected` });
+//   }
+// });
 
 // Clear Code Pairing command
 app.post('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
@@ -1718,18 +1718,18 @@ app.get('/BRIGHTNESS_DOWN/:id', (req, res) => {
 });
 
 // Update app Saki command
-app.get('/UPDATE_APP_SAKI/:id', (req, res) => {
-  const clientId = req.params.id;
-  const ws = clients[clientId];
+// app.get('/UPDATE_APP_SAKI/:id', (req, res) => {
+//   const clientId = req.params.id;
+//   const ws = clients[clientId];
 
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'dhvanil client' }));
-    sendEmail(clientId, 'UPDATE_APP_SAKI');
-    res.json({ message: `UPDATE APP command sent to client ${clientId}` });
-  } else {
-    res.status(404).json({ message: `Client ${clientId} is not connected` });
-  }
-});
+//   if (ws && ws.readyState === WebSocket.OPEN) {
+//     ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'dhvanil client' }));
+//     sendEmail(clientId, 'UPDATE_APP_SAKI');
+//     res.json({ message: `UPDATE APP command sent to client ${clientId}` });
+//   } else {
+//     res.status(404).json({ message: `Client ${clientId} is not connected` });
+//   }
+// });
 
 // Clear pairing and screen ID command
 app.get('/CLEAR_CODE_PARING_AND_SCREEN_ID/:id', (req, res) => {
@@ -1820,7 +1820,39 @@ app.get('/master-restart', (req, res) => {
 
 
 
+// Update App Saki command
+app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
 
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/tv6pebzqqwc8ict51jo58/AekAdDisply_V_5_5_28Jan.apk?rlkey=caeyljld0685yxu6fmtywzg6p&st=oqnvzqdc&raw=1' }));
+    sendEmail(clientId, 'Update App Saki');
+    res.json({ message: `UPDATE APP command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+app.post('/master-update', (req, res) => {
+  const clientIds = Object.keys(clients);
+  const updateMessage = { type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/tv6pebzqqwc8ict51jo58/AekAdDisply_V_5_5_28Jan.apk?rlkey=caeyljld0685yxu6fmtywzg6p&st=oqnvzqdc&raw=1' };
+
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(updateMessage));
+      console.log(`updateMessage command sent to client ${clientId}`);
+    }
+  });
+
+  // Send an email after master updateMessage command
+  sendEmail('Master updateMessage', 'The master updateMessage command has been sent to all connected clients.');
+
+  res.json({ message: 'updateMessage command sent to all connected clients' });
+});
 
 
 
