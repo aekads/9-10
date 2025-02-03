@@ -624,7 +624,7 @@ wsServer.on('connection', async (ws, req) => {
     
         // Insert into log table
         const logQuery = `
-          INSERT INTO screenshots_log (id, filename2, image_url2, size2, created_at)
+          INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
           VALUES ($1, $2, $3, $4, $5);
         `;
         await pool.query(logQuery, [
