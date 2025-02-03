@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const WebSocket = require('ws');
+const cors = require('cors');
 const { Pool } = require('pg');
 const session = require('express-session');
 
@@ -14,8 +15,10 @@ const pool = new Pool({
   password: 'AekAds@24',
   port: 5432,
 });
-const cors = require('cors');
-app.use(cors());  // This will allow all domains. You can also specify a particular origin like `app.use(cors({ origin: 'https://cms.aekads.com' }));`
+
+
+// Use CORS
+app.use(cors());  // Allow all origins, or specify as needed
 
 const app = express();
 const port = process.env.PORT || 10000;
