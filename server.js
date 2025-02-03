@@ -17,9 +17,6 @@ const pool = new Pool({
 });
 
 
-// Use CORS
-app.use(cors());  // Allow all origins, or specify as needed
-
 const app = express();
 const port = process.env.PORT || 10000;
 
@@ -42,6 +39,9 @@ app.use(session({
   saveUninitialized: true
 }));
 
+
+// Use CORS
+app.use(cors());  // Allow all origins, or specify as needed
 // WebSocket server
 const wsServer = new WebSocket.Server({ noServer: true });
 
