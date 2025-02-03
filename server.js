@@ -44,9 +44,9 @@ wsServer.on('connection', async (ws, req) => {
   const clientId = req.url.split('/').pop();
   if (!clientId || !/^\d+$/.test(clientId)) {
     console.log(`Invalid clientId: ${clientId}`);
-    ws.close(); 
+    ws.close();
     return;
-  }                                   
+  }
 
   if (clientId === 'status') {
     statusClients[ws] = true;
@@ -54,7 +54,7 @@ wsServer.on('connection', async (ws, req) => {
   } else {
     clients[clientId] = ws;
     const dateTime = new Date().toISOString(); // Updated format
-    
+
     // Insert or update the client status in the database
     await pool.query(
       'INSERT INTO client_statuses (client_name, status, updated_at) VALUES ($1, $2, $3) ON CONFLICT (client_name) DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at',
@@ -65,552 +65,580 @@ wsServer.on('connection', async (ws, req) => {
     broadcastStatus(clientId, 'online', dateTime);
   }
 
-// ws.on('message', async (message) => {
-//   console.log(`Received message: ${message}`);
+  // ws.on('message', async (message) => {
+  //   console.log(`Received message: ${message}`);
 
-//   let data;
-//   try {
-//     // Parse incoming message
-//     data = JSON.parse(message);
-//   } catch (error) {
-//     console.error(`Failed to parse message: ${error.message}`);
-//     return; // Exit if the message isn't valid JSON
-//   }
+  //   let data;
+  //   try {
+  //     // Parse incoming message
+  //     data = JSON.parse(message);
+  //   } catch (error) {
+  //     console.error(`Failed to parse message: ${error.message}`);
+  //     return; // Exit if the message isn't valid JSON
+  //   }
 
-//   const dateTime = new Date().toISOString(); // ISO format for consistency
+  //   const dateTime = new Date().toISOString(); // ISO format for consistency
 
-//   if (data.type === 'network') {
-//     try {
-//       const query = `
-//         INSERT INTO network_statuses (client_name, status, updated_at)
-//         VALUES ($1, $2, $3)
-//         ON CONFLICT (client_name) 
-//         DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
-//       `;
-//       await pool.query(query, [data.clientId, data.status, dateTime]);
-//       console.log(`Network status updated for client ${data.clientId}.`);
-//     } catch (error) {
-//       console.error('Failed to update network status:', error);
-//     }
-//   } else if (data.type === 'Device_Config') {
-//     console.log('Device configuration data received:', data);
+  //   if (data.type === 'network') {
+  //     try {
+  //       const query = `
+  //         INSERT INTO network_statuses (client_name, status, updated_at)
+  //         VALUES ($1, $2, $3)
+  //         ON CONFLICT (client_name) 
+  //         DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
+  //       `;
+  //       await pool.query(query, [data.clientId, data.status, dateTime]);
+  //       console.log(`Network status updated for client ${data.clientId}.`);
+  //     } catch (error) {
+  //       console.error('Failed to update network status:', error);
+  //     }
+  //   } else if (data.type === 'Device_Config') {
+  //     console.log('Device configuration data received:', data);
 
-//     try {
-//       const query = `
-//         INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
-//         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-//         ON CONFLICT (client_name) DO UPDATE 
-//         SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
-//       `;
-//       await pool.query(query, [
-//         data.clientId,
-//         data.ram_total,
-//         data.ram_used,
-//         data.storage_total,
-//         data.storage_used,
-//         data['Screen-resolution'],
-//         data.downstream_bandwidth,
-//         data.upstream_bandwidth,
-//         data.manufacturer,
-//         data.model,
-//         data.os_version,
-//         data.wifiEnabled,
-//         data.wifiMacAddress,
-//         data.wifiNetworkSSID,
-//         data.wifiSignalStrengthdBm,
-//         data.androidId,
-//         data.IfSecondScreenIsPresentOnDevice,
-//         dateTime,
-//       ]);
+  //     try {
+  //       const query = `
+  //         INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
+  //         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+  //         ON CONFLICT (client_name) DO UPDATE 
+  //         SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
+  //       `;
+  //       await pool.query(query, [
+  //         data.clientId,
+  //         data.ram_total,
+  //         data.ram_used,
+  //         data.storage_total,
+  //         data.storage_used,
+  //         data['Screen-resolution'],
+  //         data.downstream_bandwidth,
+  //         data.upstream_bandwidth,
+  //         data.manufacturer,
+  //         data.model,
+  //         data.os_version,
+  //         data.wifiEnabled,
+  //         data.wifiMacAddress,
+  //         data.wifiNetworkSSID,
+  //         data.wifiSignalStrengthdBm,
+  //         data.androidId,
+  //         data.IfSecondScreenIsPresentOnDevice,
+  //         dateTime,
+  //       ]);
 
-//       console.log(`Device configuration updated in database for client ${data.clientId} at ${dateTime}`);
-//     } catch (error) {
-//       console.error('Failed to update device configuration in database:', error);
-//     }
-//   } else if (data.type === 'Screenshot') {
-//     try {
-//       const query = `
-//         INSERT INTO screenshots (id, type, filename, image_url, size)
-//         VALUES ($1, $2, $3, $4, $5)
-//         ON CONFLICT (id) 
-//         DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
-//       `;
-//       await pool.query(query, [
-//         data.id || data.Id,
-//         data.type,
-//         data.filename,
-//         data.imageUrl,
-//         data.size,
-//       ]);
-//       console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
-//     } catch (error) {
-//       console.error('Failed to save Screenshot data:', error);
-//     }
-//   } else if (data.type === 'Screenshot2') {
-//     try {
-//       const query = `
-//         INSERT INTO screenshots (id, filename2, image_url2, size2)
-//         VALUES ($1, $2, $3, $4)
-//         ON CONFLICT (id) 
-//         DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-//       `;
-//       await pool.query(query, [
-//         data.id || data.Id,
-//         data.filename2,
-//         data.imageUrl2,
-//         data.size2,
-//       ]);
-//       console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
-//     } catch (error) {
-//       console.error('Failed to save Screenshot2 data:', error);
-//     }
-//   } else if (data.type === 'video_impression') {
-//     try {
-//       // Ensure necessary fields are present and valid
-//       if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
-//         throw new Error('Missing required fields or invalid data types');
-//       }
+  //       console.log(`Device configuration updated in database for client ${data.clientId} at ${dateTime}`);
+  //     } catch (error) {
+  //       console.error('Failed to update device configuration in database:', error);
+  //     }
+  //   } else if (data.type === 'Screenshot') {
+  //     try {
+  //       const query = `
+  //         INSERT INTO screenshots (id, type, filename, image_url, size)
+  //         VALUES ($1, $2, $3, $4, $5)
+  //         ON CONFLICT (id) 
+  //         DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+  //       `;
+  //       await pool.query(query, [
+  //         data.id || data.Id,
+  //         data.type,
+  //         data.filename,
+  //         data.imageUrl,
+  //         data.size,
+  //       ]);
+  //       console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
+  //     } catch (error) {
+  //       console.error('Failed to save Screenshot data:', error);
+  //     }
+  //   } else if (data.type === 'Screenshot2') {
+  //     try {
+  //       const query = `
+  //         INSERT INTO screenshots (id, filename2, image_url2, size2)
+  //         VALUES ($1, $2, $3, $4)
+  //         ON CONFLICT (id) 
+  //         DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+  //       `;
+  //       await pool.query(query, [
+  //         data.id || data.Id,
+  //         data.filename2,
+  //         data.imageUrl2,
+  //         data.size2,
+  //       ]);
+  //       console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
+  //     } catch (error) {
+  //       console.error('Failed to save Screenshot2 data:', error);
+  //     }
+  //   } else if (data.type === 'video_impression') {
+  //     try {
+  //       // Ensure necessary fields are present and valid
+  //       if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
+  //         throw new Error('Missing required fields or invalid data types');
+  //       }
 
-//       // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
-//       const timestampInSeconds = Math.floor(data.timestamp / 1000);
-//       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
+  //       // Convert the timestamp and uploaded_time_timestamp from milliseconds to seconds
+  //       const timestampInSeconds = Math.floor(data.timestamp / 1000);
+  //       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
 
-//       // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
-//       const query = `
-//         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
-//         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
-//       `;
+  //       // SQL query with TO_TIMESTAMP to convert the Unix timestamp to a valid PostgreSQL timestamp
+  //       const query = `
+  //         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
+  //         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9))
+  //       `;
 
-//       // Execute the query
-//       await pool.query(query, [
-//         data.type,
-//         data.video_id,
-//         data.screen_id,
-//         data.device_id,
-//         data.name,
-//         data.count,
-//         data.duration,
-//         timestampInSeconds,
-//         uploadedTimeInSeconds,
-//       ]);
+  //       // Execute the query
+  //       await pool.query(query, [
+  //         data.type,
+  //         data.video_id,
+  //         data.screen_id,
+  //         data.device_id,
+  //         data.name,
+  //         data.count,
+  //         data.duration,
+  //         timestampInSeconds,
+  //         uploadedTimeInSeconds,
+  //       ]);
 
-//       console.log(`Video impression data saved for video ID ${data.video_id}.`);
-//       // Send success response
-      
-//     } catch (error) {
-//       const errorMessage = `Failed to save video impression data: ${error.message}`;
-//       console.error(errorMessage);
+  //       console.log(`Video impression data saved for video ID ${data.video_id}.`);
+  //       // Send success response
 
-//       // Log the exact error response being sent to the client
-//       console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
+  //     } catch (error) {
+  //       const errorMessage = `Failed to save video impression data: ${error.message}`;
+  //       console.error(errorMessage);
 
-      
-//     }
-//   } else {
-//     console.log(`Unknown message type received: ${data.type}`);
-//   }
-// });
+  //       // Log the exact error response being sent to the client
+  //       console.log('Sending error response:', JSON.stringify({ status: 'error', message: errorMessage }));
 
 
-
-
-
-// ws.on('message', async (message) => {
-//   console.log(`[${new Date().toISOString()}] Received message: ${message}`);
-
-//   let data;
-//   try {
-//     // Parse incoming message
-//     data = JSON.parse(message);
-//     console.log(`[${new Date().toISOString()}] Message successfully parsed:`, data);
-//   } catch (error) {
-//     console.error(`[${new Date().toISOString()}] Failed to parse message: ${error.message}`);
-//     return; // Exit if the message isn't valid JSON
-//   }
-
-//   const dateTime = new Date().toISOString(); // ISO format for consistency
-
-//   if (data.type === 'network') {
-//     console.log(`[${new Date().toISOString()}] Processing network status for client: ${data.clientId}`);
-//     try {
-//       const query = `
-//         INSERT INTO network_statuses (client_name, status, updated_at)
-//         VALUES ($1, $2, $3)
-//         ON CONFLICT (client_name) 
-//         DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
-//       `;
-//       await pool.query(query, [data.clientId, data.status, dateTime]);
-//       console.log(`[${new Date().toISOString()}] Network status updated for client ${data.clientId}.`);
-//     } catch (error) {
-//       console.error(`[${new Date().toISOString()}] Failed to update network status: ${error.message}`);
-//     }
-//   } else if (data.type === 'Device_Config') {
-//     console.log(`[${new Date().toISOString()}] Processing device configuration for client: ${data.clientId}`);
-//     try {
-//       const query = `
-//         INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
-//         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-//         ON CONFLICT (client_name) DO UPDATE 
-//         SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
-//       `;
-//       await pool.query(query, [
-//         data.clientId,
-//         data.ram_total,
-//         data.ram_used,
-//         data.storage_total,
-//         data.storage_used,
-//         data['Screen-resolution'],
-//         data.downstream_bandwidth,
-//         data.upstream_bandwidth,
-//         data.manufacturer,
-//         data.model,
-//         data.os_version,
-//         data.wifiEnabled,
-//         data.wifiMacAddress,
-//         data.wifiNetworkSSID,
-//         data.wifiSignalStrengthdBm,
-//         data.androidId,
-//         data.IfSecondScreenIsPresentOnDevice,
-//         dateTime,
-//       ]);
-//       console.log(`[${new Date().toISOString()}] Device configuration updated for client ${data.clientId}.`);
-//     } catch (error) {
-//       console.error(`[${new Date().toISOString()}] Failed to update device configuration: ${error.message}`);
-//     }
-//   } else if (data.type === 'Screenshot') {
-//     console.log(`[${new Date().toISOString()}] Processing screenshot data for ID: ${data.id || data.Id}`);
-//     try {
-//       const query = `
-//         INSERT INTO screenshots (id, type, filename, image_url, size)
-//         VALUES ($1, $2, $3, $4, $5)
-//         ON CONFLICT (id) 
-//         DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
-//       `;
-//       await pool.query(query, [
-//         data.id || data.Id,
-//         data.type,
-//         data.filename,
-//         data.imageUrl,
-//         data.size,
-//       ]);
-//       console.log(`[${new Date().toISOString()}] Screenshot data saved for ID ${data.id || data.Id}.`);
-//     } catch (error) {
-//       console.error(`[${new Date().toISOString()}] Failed to save screenshot data: ${error.message}`);
-//     }
-//   } else if (data.type === 'Screenshot2') {
-//     console.log(`[${new Date().toISOString()}] Processing secondary screenshot data for ID: ${data.id || data.Id}`);
-//     try {
-//       const query = `
-//         INSERT INTO screenshots (id, filename2, image_url2, size2)
-//         VALUES ($1, $2, $3, $4)
-//         ON CONFLICT (id) 
-//         DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-//       `;
-//       await pool.query(query, [
-//         data.id || data.Id,
-//         data.filename2,
-//         data.imageUrl2,
-//         data.size2,
-//       ]);
-//       console.log(`[${new Date().toISOString()}] Screenshot2 data saved for ID ${data.id || data.Id}.`);
-//     } catch (error) {
-//       console.error(`[${new Date().toISOString()}] Failed to save Screenshot2 data: ${error.message}`);
-//     }
-//   } else if (data.type === 'video_impression') {
-//     console.log(`[${new Date().toISOString()}] Processing video impression data for video ID: ${data.video_id}`);
-//     try {
-//       if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
-//         throw new Error('Missing required fields or invalid data types');
-//       }
-
-//       const timestampInSeconds = Math.floor(data.timestamp / 1000);
-//       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
-
-//       const query = `
-//         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
-//         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9));
-//       `;
-//       await pool.query(query, [
-//         data.type,
-//         data.video_id,
-//         data.screen_id,
-//         data.device_id,
-//         data.name,
-//         data.count,
-//         data.duration,
-//         timestampInSeconds,
-//         uploadedTimeInSeconds,
-//       ]);
-
-//       console.log(`[${new Date().toISOString()}] Video impression data saved for video ID ${data.video_id}.`);
-//     } catch (error) {
-//       const errorMessage = `Failed to save video impression data: ${error.message}`;
-//       console.error(`[${new Date().toISOString()}] ${errorMessage}`);
-//     }
-//   } else {
-//     console.log(`[${new Date().toISOString()}] Unknown for ${data.clientId} message type received: ${data.type}`);
-//   }
-// });
+  //     }
+  //   } else {
+  //     console.log(`Unknown message type received: ${data.type}`);
+  //   }
+  // });
 
 
 
 
 
+  // ws.on('message', async (message) => {
+  //   console.log(`[${new Date().toISOString()}] Received message: ${message}`);
 
+  //   let data;
+  //   try {
+  //     // Parse incoming message
+  //     data = JSON.parse(message);
+  //     console.log(`[${new Date().toISOString()}] Message successfully parsed:`, data);
+  //   } catch (error) {
+  //     console.error(`[${new Date().toISOString()}] Failed to parse message: ${error.message}`);
+  //     return; // Exit if the message isn't valid JSON
+  //   }
 
-// ws.on('message', async (message) => {
-//   console.log(`[${new Date().toISOString()}] Received message: ${message}`);
+  //   const dateTime = new Date().toISOString(); // ISO format for consistency
 
-//   let data;
-//   try {
-//     // Parse incoming message
-//     data = JSON.parse(message);
-//     console.log(`[${new Date().toISOString()}] Message successfully parsed:`, data);
-//   } catch (error) {
-//     console.error(`[${new Date().toISOString()}] Failed to parse message: ${error.message}`);
-//     return; // Exit if the message isn't valid JSON
-//   }
+  //   if (data.type === 'network') {
+  //     console.log(`[${new Date().toISOString()}] Processing network status for client: ${data.clientId}`);
+  //     try {
+  //       const query = `
+  //         INSERT INTO network_statuses (client_name, status, updated_at)
+  //         VALUES ($1, $2, $3)
+  //         ON CONFLICT (client_name) 
+  //         DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
+  //       `;
+  //       await pool.query(query, [data.clientId, data.status, dateTime]);
+  //       console.log(`[${new Date().toISOString()}] Network status updated for client ${data.clientId}.`);
+  //     } catch (error) {
+  //       console.error(`[${new Date().toISOString()}] Failed to update network status: ${error.message}`);
+  //     }
+  //   } else if (data.type === 'Device_Config') {
+  //     console.log(`[${new Date().toISOString()}] Processing device configuration for client: ${data.clientId}`);
+  //     try {
+  //       const query = `
+  //         INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at)
+  //         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+  //         ON CONFLICT (client_name) DO UPDATE 
+  //         SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at;
+  //       `;
+  //       await pool.query(query, [
+  //         data.clientId,
+  //         data.ram_total,
+  //         data.ram_used,
+  //         data.storage_total,
+  //         data.storage_used,
+  //         data['Screen-resolution'],
+  //         data.downstream_bandwidth,
+  //         data.upstream_bandwidth,
+  //         data.manufacturer,
+  //         data.model,
+  //         data.os_version,
+  //         data.wifiEnabled,
+  //         data.wifiMacAddress,
+  //         data.wifiNetworkSSID,
+  //         data.wifiSignalStrengthdBm,
+  //         data.androidId,
+  //         data.IfSecondScreenIsPresentOnDevice,
+  //         dateTime,
+  //       ]);
+  //       console.log(`[${new Date().toISOString()}] Device configuration updated for client ${data.clientId}.`);
+  //     } catch (error) {
+  //       console.error(`[${new Date().toISOString()}] Failed to update device configuration: ${error.message}`);
+  //     }
+  //   } else if (data.type === 'Screenshot') {
+  //     console.log(`[${new Date().toISOString()}] Processing screenshot data for ID: ${data.id || data.Id}`);
+  //     try {
+  //       const query = `
+  //         INSERT INTO screenshots (id, type, filename, image_url, size)
+  //         VALUES ($1, $2, $3, $4, $5)
+  //         ON CONFLICT (id) 
+  //         DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+  //       `;
+  //       await pool.query(query, [
+  //         data.id || data.Id,
+  //         data.type,
+  //         data.filename,
+  //         data.imageUrl,
+  //         data.size,
+  //       ]);
+  //       console.log(`[${new Date().toISOString()}] Screenshot data saved for ID ${data.id || data.Id}.`);
+  //     } catch (error) {
+  //       console.error(`[${new Date().toISOString()}] Failed to save screenshot data: ${error.message}`);
+  //     }
+  //   } else if (data.type === 'Screenshot2') {
+  //     console.log(`[${new Date().toISOString()}] Processing secondary screenshot data for ID: ${data.id || data.Id}`);
+  //     try {
+  //       const query = `
+  //         INSERT INTO screenshots (id, filename2, image_url2, size2)
+  //         VALUES ($1, $2, $3, $4)
+  //         ON CONFLICT (id) 
+  //         DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+  //       `;
+  //       await pool.query(query, [
+  //         data.id || data.Id,
+  //         data.filename2,
+  //         data.imageUrl2,
+  //         data.size2,
+  //       ]);
+  //       console.log(`[${new Date().toISOString()}] Screenshot2 data saved for ID ${data.id || data.Id}.`);
+  //     } catch (error) {
+  //       console.error(`[${new Date().toISOString()}] Failed to save Screenshot2 data: ${error.message}`);
+  //     }
+  //   } else if (data.type === 'video_impression') {
+  //     console.log(`[${new Date().toISOString()}] Processing video impression data for video ID: ${data.video_id}`);
+  //     try {
+  //       if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
+  //         throw new Error('Missing required fields or invalid data types');
+  //       }
 
-//   const dateTime = new Date().toISOString(); // ISO format for consistency
+  //       const timestampInSeconds = Math.floor(data.timestamp / 1000);
+  //       const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
 
-//   switch (data.type) {
-//     case 'network':
-//       console.log(`[${new Date().toISOString()}] Processing network status for client: ${data.clientId}`);
-//       try {
-//         const query = `
-//           INSERT INTO network_statuses (client_name, status, updated_at)
-//           VALUES ($1, $2, $3)
-//           ON CONFLICT (client_name) 
-//           DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
-//         `;
-//         await pool.query(query, [data.clientId, data.status, dateTime]);
-//         console.log(`[${new Date().toISOString()}] Network status updated for client ${data.clientId}.`);
-//       } catch (error) {
-//         console.error(`[${new Date().toISOString()}] Failed to update network status: ${error.message}`);
-//       }
-//       break;
+  //       const query = `
+  //         INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
+  //         VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9));
+  //       `;
+  //       await pool.query(query, [
+  //         data.type,
+  //         data.video_id,
+  //         data.screen_id,
+  //         data.device_id,
+  //         data.name,
+  //         data.count,
+  //         data.duration,
+  //         timestampInSeconds,
+  //         uploadedTimeInSeconds,
+  //       ]);
 
-//     case 'Device_Config':
-//       console.log(`[${new Date().toISOString()}] Processing device configuration for client: ${data.clientId}`);
-//       try {
-//       await pool.query(
-//         'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at',
-//         [
-//           clientId,
-//           data.ram_total,
-//           data.ram_used,
-//           data.storage_total,
-//           data.storage_used,
-//           data['Screen-resolution'],
-//           data.downstream_bandwidth,
-//           data.upstream_bandwidth,
-//           data.manufacturer,
-//           data.model,
-//           data.os_version,
-//           data.wifiEnabled,
-//           data.wifiMacAddress,
-//           data.wifiNetworkSSID,
-//           data.wifiSignalStrengthdBm,
-//           data.androidId,
-//           data.IfSecondScreenIsPresentOnDevice, // Updated field as integer
-//           dateTime,
-//         ]
-//       );
-
-//       console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
-//     } catch (error) {
-//       console.error(`Failed to update device configuration in database:`, error);
-//     }
-//       break;
-
-//     case 'Screenshot':
-//       console.log(`[${new Date().toISOString()}] Processing screenshot data for ID: ${data.id || data.Id}`);
-//       try {
-//         const query = `
-//           INSERT INTO screenshots (id, type, filename, image_url, size)
-//           VALUES ($1, $2, $3, $4, $5)
-//           ON CONFLICT (id) 
-//           DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
-//         `;
-//         await pool.query(query, [
-//           data.id || data.Id,
-//           data.type,
-//           data.filename,
-//           data.imageUrl,
-//           data.size,
-//         ]);
-//         console.log(`[${new Date().toISOString()}] Screenshot data saved for ID ${data.id || data.Id}.`);
-//       } catch (error) {
-//         console.error(`[${new Date().toISOString()}] Failed to save screenshot data: ${error.message}`);
-//       }
-//       break;
-
-//     case 'Screenshot2':
-//       console.log(`[${new Date().toISOString()}] Processing secondary screenshot data for ID: ${data.id || data.Id}`);
-//       try {
-//         const query = `
-//           INSERT INTO screenshots (id, filename2, image_url2, size2)
-//           VALUES ($1, $2, $3, $4)
-//           ON CONFLICT (id) 
-//           DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-//         `;
-//         await pool.query(query, [
-//           data.id || data.Id,
-//           data.filename2,
-//           data.imageUrl2,
-//           data.size2,
-//         ]);
-//         console.log(`[${new Date().toISOString()}] Screenshot2 data saved for ID ${data.id || data.Id}.`);
-//       } catch (error) {
-//         console.error(`[${new Date().toISOString()}] Failed to save Screenshot2 data: ${error.message}`);
-//       }
-//       break;
-
-//     case 'video_impression':
-//       console.log(`[${new Date().toISOString()}] Processing video impression data for video ID: ${data.video_id}`);
-//       try {
-//         if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
-//           throw new Error('Missing required fields or invalid data types');
-//         }
-
-//         const timestampInSeconds = Math.floor(data.timestamp / 1000);
-//         const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
-
-//         const query = `
-//           INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
-//           VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9));
-//         `;
-//         await pool.query(query, [
-//           data.type,
-//           data.video_id,
-//           data.screen_id,
-//           data.device_id,
-//           data.name,
-//           data.count,
-//           data.duration,
-//           timestampInSeconds,
-//           uploadedTimeInSeconds,
-//         ]);
-
-//         console.log(`[${new Date().toISOString()}] Video impression data saved for video ID ${data.video_id}.`);
-//       } catch (error) {
-//         console.error(`[${new Date().toISOString()}] Failed to save video impression data: ${error.message}`);
-//       }
-//       break;
-
-//     default:
-//       console.log(`[${new Date().toISOString()}] Unknown message type received: ${data.type}`);
-//   }
-// });
+  //       console.log(`[${new Date().toISOString()}] Video impression data saved for video ID ${data.video_id}.`);
+  //     } catch (error) {
+  //       const errorMessage = `Failed to save video impression data: ${error.message}`;
+  //       console.error(`[${new Date().toISOString()}] ${errorMessage}`);
+  //     }
+  //   } else {
+  //     console.log(`[${new Date().toISOString()}] Unknown for ${data.clientId} message type received: ${data.type}`);
+  //   }
+  // });
 
 
 
-ws.on('message', async (message) => {
-  console.log(`Received message: ${message}`);
 
-  let data;
-  try {
-    // Parse incoming message
-    data = JSON.parse(message);
-  } catch (error) {
-    console.error(`Failed to parse message: ${error.message}`);
-    return; // Exit if the message isn't valid JSON
-  }
 
-  const dateTime = new Date().toISOString(); // ISO format for consistency
 
-  if (data.type === 'network') {
+
+  // ws.on('message', async (message) => {
+  //   console.log(`[${new Date().toISOString()}] Received message: ${message}`);
+
+  //   let data;
+  //   try {
+  //     // Parse incoming message
+  //     data = JSON.parse(message);
+  //     console.log(`[${new Date().toISOString()}] Message successfully parsed:`, data);
+  //   } catch (error) {
+  //     console.error(`[${new Date().toISOString()}] Failed to parse message: ${error.message}`);
+  //     return; // Exit if the message isn't valid JSON
+  //   }
+
+  //   const dateTime = new Date().toISOString(); // ISO format for consistency
+
+  //   switch (data.type) {
+  //     case 'network':
+  //       console.log(`[${new Date().toISOString()}] Processing network status for client: ${data.clientId}`);
+  //       try {
+  //         const query = `
+  //           INSERT INTO network_statuses (client_name, status, updated_at)
+  //           VALUES ($1, $2, $3)
+  //           ON CONFLICT (client_name) 
+  //           DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
+  //         `;
+  //         await pool.query(query, [data.clientId, data.status, dateTime]);
+  //         console.log(`[${new Date().toISOString()}] Network status updated for client ${data.clientId}.`);
+  //       } catch (error) {
+  //         console.error(`[${new Date().toISOString()}] Failed to update network status: ${error.message}`);
+  //       }
+  //       break;
+
+  //     case 'Device_Config':
+  //       console.log(`[${new Date().toISOString()}] Processing device configuration for client: ${data.clientId}`);
+  //       try {
+  //       await pool.query(
+  //         'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at',
+  //         [
+  //           clientId,
+  //           data.ram_total,
+  //           data.ram_used,
+  //           data.storage_total,
+  //           data.storage_used,
+  //           data['Screen-resolution'],
+  //           data.downstream_bandwidth,
+  //           data.upstream_bandwidth,
+  //           data.manufacturer,
+  //           data.model,
+  //           data.os_version,
+  //           data.wifiEnabled,
+  //           data.wifiMacAddress,
+  //           data.wifiNetworkSSID,
+  //           data.wifiSignalStrengthdBm,
+  //           data.androidId,
+  //           data.IfSecondScreenIsPresentOnDevice, // Updated field as integer
+  //           dateTime,
+  //         ]
+  //       );
+
+  //       console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
+  //     } catch (error) {
+  //       console.error(`Failed to update device configuration in database:`, error);
+  //     }
+  //       break;
+
+  //     case 'Screenshot':
+  //       console.log(`[${new Date().toISOString()}] Processing screenshot data for ID: ${data.id || data.Id}`);
+  //       try {
+  //         const query = `
+  //           INSERT INTO screenshots (id, type, filename, image_url, size)
+  //           VALUES ($1, $2, $3, $4, $5)
+  //           ON CONFLICT (id) 
+  //           DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+  //         `;
+  //         await pool.query(query, [
+  //           data.id || data.Id,
+  //           data.type,
+  //           data.filename,
+  //           data.imageUrl,
+  //           data.size,
+  //         ]);
+  //         console.log(`[${new Date().toISOString()}] Screenshot data saved for ID ${data.id || data.Id}.`);
+  //       } catch (error) {
+  //         console.error(`[${new Date().toISOString()}] Failed to save screenshot data: ${error.message}`);
+  //       }
+  //       break;
+
+  //     case 'Screenshot2':
+  //       console.log(`[${new Date().toISOString()}] Processing secondary screenshot data for ID: ${data.id || data.Id}`);
+  //       try {
+  //         const query = `
+  //           INSERT INTO screenshots (id, filename2, image_url2, size2)
+  //           VALUES ($1, $2, $3, $4)
+  //           ON CONFLICT (id) 
+  //           DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+  //         `;
+  //         await pool.query(query, [
+  //           data.id || data.Id,
+  //           data.filename2,
+  //           data.imageUrl2,
+  //           data.size2,
+  //         ]);
+  //         console.log(`[${new Date().toISOString()}] Screenshot2 data saved for ID ${data.id || data.Id}.`);
+  //       } catch (error) {
+  //         console.error(`[${new Date().toISOString()}] Failed to save Screenshot2 data: ${error.message}`);
+  //       }
+  //       break;
+
+  //     case 'video_impression':
+  //       console.log(`[${new Date().toISOString()}] Processing video impression data for video ID: ${data.video_id}`);
+  //       try {
+  //         if (!data.video_id || !data.screen_id || !data.device_id || !data.name || typeof data.count !== 'number' || typeof data.duration !== 'number') {
+  //           throw new Error('Missing required fields or invalid data types');
+  //         }
+
+  //         const timestampInSeconds = Math.floor(data.timestamp / 1000);
+  //         const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000);
+
+  //         const query = `
+  //           INSERT INTO video_impressions (type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp)
+  //           VALUES ($1, $2, $3, $4, $5, $6, $7, TO_TIMESTAMP($8), TO_TIMESTAMP($9));
+  //         `;
+  //         await pool.query(query, [
+  //           data.type,
+  //           data.video_id,
+  //           data.screen_id,
+  //           data.device_id,
+  //           data.name,
+  //           data.count,
+  //           data.duration,
+  //           timestampInSeconds,
+  //           uploadedTimeInSeconds,
+  //         ]);
+
+  //         console.log(`[${new Date().toISOString()}] Video impression data saved for video ID ${data.video_id}.`);
+  //       } catch (error) {
+  //         console.error(`[${new Date().toISOString()}] Failed to save video impression data: ${error.message}`);
+  //       }
+  //       break;
+
+  //     default:
+  //       console.log(`[${new Date().toISOString()}] Unknown message type received: ${data.type}`);
+  //   }
+  // });
+
+
+
+  ws.on('message', async (message) => {
+    console.log(`Received message: ${message}`);
+
+    let data;
     try {
-      const query = `
+      // Parse incoming message
+      data = JSON.parse(message);
+    } catch (error) {
+      console.error(`Failed to parse message: ${error.message}`);
+      return; // Exit if the message isn't valid JSON
+    }
+
+    const dateTime = new Date().toISOString(); // ISO format for consistency
+
+    if (data.type === 'network') {
+      try {
+        const query = `
         INSERT INTO network_statuses (client_name, status, updated_at)
         VALUES ($1, $2, $3)
         ON CONFLICT (client_name) 
         DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
       `;
-      await pool.query(query, [data.clientId, data.status, dateTime]);
-      console.log(`Network status updated for client ${data.clientId}.`);
-    } catch (error) {
-      console.error('Failed to update network status:', error);
-    }
-  } else if (data.type === 'Device_Config') {
-    console.log('Device configuration data received:', data);
+        await pool.query(query, [data.clientId, data.status, dateTime]);
+        console.log(`Network status updated for client ${data.clientId}.`);
+      } catch (error) {
+        console.error('Failed to update network status:', error);
+      }
+    } else if (data.type === 'Device_Config') {
+      console.log('Device configuration data received:', data);
 
-    try {
-      await pool.query(
-        'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at',
-        [
-          clientId,
-          data.ram_total,
-          data.ram_used,
-          data.storage_total,
-          data.storage_used,
-          data['Screen-resolution'],
-          data.downstream_bandwidth,
-          data.upstream_bandwidth,
-          data.manufacturer,
-          data.model,
-          data.os_version,
-          data.wifiEnabled,
-          data.wifiMacAddress,
-          data.wifiNetworkSSID,
-          data.wifiSignalStrengthdBm,
-          data.androidId,
-          data.IfSecondScreenIsPresentOnDevice, // Updated field as integer
-          dateTime,
-        ]
-      );
+      try {
+        await pool.query(
+          'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, updated_at = EXCLUDED.updated_at',
+          [
+            clientId,
+            data.ram_total,
+            data.ram_used,
+            data.storage_total,
+            data.storage_used,
+            data['Screen-resolution'],
+            data.downstream_bandwidth,
+            data.upstream_bandwidth,
+            data.manufacturer,
+            data.model,
+            data.os_version,
+            data.wifiEnabled,
+            data.wifiMacAddress,
+            data.wifiNetworkSSID,
+            data.wifiSignalStrengthdBm,
+            data.androidId,
+            data.IfSecondScreenIsPresentOnDevice, // Updated field as integer
+            dateTime,
+          ]
+        );
 
-      console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
-    } catch (error) {
-      console.error(`Failed to update device configuration in database:`, error);
+        console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
+      } catch (error) {
+        console.error(`Failed to update device configuration in database:`, error);
+      }
+    } else if (data.type === 'Screenshot') {
+      try {
+        const query = `
+          INSERT INTO screenshots (id, type, filename, image_url, size)
+          VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (id) 
+          DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+        `;
+        await pool.query(query, [
+          data.id || data.Id,
+          data.type,
+          data.filename,
+          data.imageUrl,
+          data.size,
+        ]);
+  
+        // Insert data into the new table (no conflict handling, always inserts)
+        const logQuery = `
+          INSERT INTO screenshots_log (id, type, filename, image_url, size, created_at)
+          VALUES ($1, $2, $3, $4, $5, NOW());
+        `;
+        await pool.query(logQuery, [
+          data.id || data.Id,
+          data.type,
+          data.filename,
+          data.imageUrl,
+          data.size,
+        ]);
+  
+        console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
+      } catch (error) {
+        console.error('Failed to save Screenshot data:', error);
+      }
+    } else if (data.type === 'Screenshot2') {
+      try {
+        const query = `
+          INSERT INTO screenshots (id, filename2, image_url2, size2)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (id) 
+          DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+        `;
+        await pool.query(query, [
+          data.id || data.Id,
+          data.filename2,
+          data.imageUrl2,
+          data.size2,
+        ]);
+  
+        // Insert into log table
+        const logQuery = `
+          INSERT INTO screenshots_log (id, filename2, image_url2, size2, created_at)
+          VALUES ($1, $2, $3, $4, NOW());
+        `;
+        await pool.query(logQuery, [
+          data.id || data.Id,
+          data.filename2,
+          data.imageUrl2,
+          data.size2,
+        ]);
+  
+        console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
+      } catch (error) {
+        console.error('Failed to save Screenshot2 data:', error);
+      }
     }
-  } else if (data.type === 'Screenshot') {
-    try {
-      const query = `
-        INSERT INTO screenshots (id, type, filename, image_url, size)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (id) 
-        DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
-      `;
-      await pool.query(query, [
-        data.id || data.Id,
-        data.type,
-        data.filename,
-        data.imageUrl,
-        data.size,
-      ]);
-      console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
-    } catch (error) {
-      console.error('Failed to save Screenshot data:', error);
-    }
-  } else if (data.type === 'Screenshot2') {
-    try {
-      const query = `
-        INSERT INTO screenshots (id, filename2, image_url2, size2)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (id) 
-        DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-      `;
-      await pool.query(query, [
-        data.id || data.Id,
-        data.filename2,
-        data.imageUrl2,
-        data.size2,
-      ]);
-      console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
-    } catch (error) {
-      console.error('Failed to save Screenshot2 data:', error);
-    }
-  } else if (data.type === 'video_impression') {
-    console.log('[INFO] Processing "video_impression" message.');
+   else if (data.type === 'video_impression') {
+      console.log('[INFO] Processing "video_impression" message.');
 
-    try {
+      try {
         // Validate required fields and types
         const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
         for (const field of requiredFields) {
-            if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
-                throw new Error(`Missing or invalid field: ${field}`);
-            }
+          if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+            throw new Error(`Missing or invalid field: ${field}`);
+          }
         }
 
         const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
@@ -628,55 +656,29 @@ ws.on('message', async (message) => {
         const result = await pool.query(checkQuery, checkParams);
 
         if (result.rows.length > 0) {
-            // Entry exists; update the count
-            const existingEntry = result.rows[0];
-            const newCount = existingEntry.count + data.count;
+          // Entry exists; update the count
+          const existingEntry = result.rows[0];
+          const newCount = existingEntry.count + data.count;
 
-            const updateQuery = `
+          const updateQuery = `
                 UPDATE video_impressions 
                 SET count = $1, duration = $2 
                 WHERE id = $3
             `;
-            const updateParams = [newCount, data.duration, existingEntry.id];
-            await pool.query(updateQuery, updateParams);
+          const updateParams = [newCount, data.duration, existingEntry.id];
+          await pool.query(updateQuery, updateParams);
 
-            console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-            ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+          console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
+          ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
         } else {
-            // Entry does not exist; insert a new record in the main table
-            const insertQuery = `
+          // Entry does not exist; insert a new record in the main table
+          const insertQuery = `
                 INSERT INTO video_impressions (
                     type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
                 )
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
             `;
-            const insertParams = [
-                data.type,
-                data.video_id,
-                data.screen_id,
-                data.device_id,
-                data.name,
-                data.count,
-                data.duration,
-                data.video_tag,
-                timestampInSeconds,
-                uploadedTimeInSeconds,
-                uploadedDate,
-            ];
-            await pool.query(insertQuery, insertParams);
-
-            console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-            ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
-        }
-
-        // Insert into the new table (video_impressions_log)
-        const logInsertQuery = `
-            INSERT INTO video_impressions_log (
-                type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-        `;
-        const logInsertParams = [
+          const insertParams = [
             data.type,
             data.video_id,
             data.screen_id,
@@ -688,29 +690,53 @@ ws.on('message', async (message) => {
             timestampInSeconds,
             uploadedTimeInSeconds,
             uploadedDate,
+          ];
+          await pool.query(insertQuery, insertParams);
+
+          console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
+          ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+        }
+
+        // Insert into the new table (video_impressions_log)
+        const logInsertQuery = `
+            INSERT INTO video_impressions_log (
+                type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
+        `;
+        const logInsertParams = [
+          data.type,
+          data.video_id,
+          data.screen_id,
+          data.device_id,
+          data.name,
+          data.count,
+          data.duration,
+          data.video_tag,
+          timestampInSeconds,
+          uploadedTimeInSeconds,
+          uploadedDate,
         ];
         await pool.query(logInsertQuery, logInsertParams);
 
         console.log(`[SUCCESS] Video impression log entry saved for video ID: ${data.video_id}.`);
 
-    } catch (error) {
+      } catch (error) {
         const errorMessage = `Failed to save video impression data: ${error.message}`;
         console.error('[ERROR]', errorMessage);
 
         ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+      }
+    } else {
+      console.log(`Unknown message type received: ${data.type}`);
     }
-  } else {
-    console.log(`Unknown message type received: ${data.type}`);
-  }
-});
+  });
 
 
 
 
-app.set('view engine', 'ejs'); // If using EJS
-app.use(express.static('public'));
-
-
+  app.set('view engine', 'ejs'); // If using EJS
+  app.use(express.static('public'));
 
 
 
@@ -721,37 +747,39 @@ app.use(express.static('public'));
 
 
 
-  
-
-
-// app.get('/video-impressions', async (req, res) => {
-//   try {
-//     const result = await pool.query(`
-//       SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
-//       FROM public.video_impressions
-//       ORDER BY uploaded_date DESC; -- Change DESC to ASC for ascending order
-//     `);
-
-//     res.render('video-impressions', { data: result.rows });
-//   } catch (err) {
-//     console.error('Error fetching data', err);
-//     res.status(500).send('Error fetching data');
-//   }
-// });
 
 
 
 
 
+  // app.get('/video-impressions', async (req, res) => {
+  //   try {
+  //     const result = await pool.query(`
+  //       SELECT id, type, video_id, screen_id, device_id, name, count, duration, "timestamp", uploaded_time_timestamp, video_tag, uploaded_date
+  //       FROM public.video_impressions
+  //       ORDER BY uploaded_date DESC; -- Change DESC to ASC for ascending order
+  //     `);
+
+  //     res.render('video-impressions', { data: result.rows });
+  //   } catch (err) {
+  //     console.error('Error fetching data', err);
+  //     res.status(500).send('Error fetching data');
+  //   }
+  // });
 
 
 
-  
+
+
+
+
+
+
   ws.on('close', async () => {
     if (clientId !== 'status') {
       delete clients[clientId];
       const dateTime = new Date().toISOString(); // Updated format
-      
+
       // Update the client status in the database
       await pool.query(
         'UPDATE client_statuses SET status = $1, updated_at = $2 WHERE client_name = $3',
@@ -884,7 +912,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  
+
   // Replace with your actual authentication logic
   if (
     (username === 'dhvanil' && password === 'dhvanil1403@') ||
@@ -895,7 +923,7 @@ app.post('/login', (req, res) => {
   } else {
     res.status(401).send('Unauthorized: Invalid username or password');
   }
-  
+
 });
 
 
@@ -905,15 +933,15 @@ app.get('/update', isAuthenticated1, async (req, res) => {
     // Retrieve client statuses from the database
     const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
     const screensResult = await pool.query('SELECT * FROM screens');
-    
+
     // Extract screen data from the result
     const screens = screensResult.rows;
 
     const clientStatuses = {};
     clientStatusResult.rows.forEach(row => {
-      clientStatuses[row.client_name] = { 
-        status: row.status, 
-        dateTime: row.updated_at, 
+      clientStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at,
         power_times: row.power_times // Include power_times here
       };
     });
@@ -984,15 +1012,15 @@ app.get('/status', isAuthenticated1, async (req, res) => {
     // Retrieve client statuses from the database
     const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
     const screensResult = await pool.query('SELECT * FROM screens');
-    
+
     // Extract screen data from the result
     const screens = screensResult.rows;
 
     const clientStatuses = {};
     clientStatusResult.rows.forEach(row => {
-      clientStatuses[row.client_name] = { 
-        status: row.status, 
-        dateTime: row.updated_at, 
+      clientStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at,
         power_times: row.power_times // Include power_times here
       };
     });
@@ -1492,7 +1520,7 @@ app.post('/master-restart', (req, res) => {
 
 // app.post('/send-dhvanil-command/:clientId', (req, res) => {
 //   const clientId = req.params.clientId;
-  
+
 //   // Send command to the client (details depend on your communication with the client)
 //   sendCommandToClient(clientId, 'Dhvanil', (clientData) => {
 //     if (clientData) {
@@ -1919,7 +1947,7 @@ app.post('/access', (req, res) => {
   ];
 
   // Check if the provided credentials match any valid ones
-  const isValidUser = validCredentials.some(cred => 
+  const isValidUser = validCredentials.some(cred =>
     cred.username === username && cred.password === password
   );
 
@@ -1929,8 +1957,8 @@ app.post('/access', (req, res) => {
 
     // Redirect to the originally requested page or default to '/screenshots'
     const redirectPath = req.session.returnTo || '/screenshots';
-    console.log("redirectPath",redirectPath);
-    
+    console.log("redirectPath", redirectPath);
+
     delete req.session.returnTo; // Clear the saved path from the session
     res.redirect(redirectPath); // Redirect to the intended route
   } else {
