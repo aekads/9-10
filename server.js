@@ -707,6 +707,8 @@ ws.on('message', async (message) => {
 
 
 
+app.set('view engine', 'ejs'); // If using EJS
+app.use(express.static('public'));
 
 
 
@@ -736,46 +738,6 @@ ws.on('message', async (message) => {
 //     res.status(500).send('Error fetching data');
 //   }
 // });
-
-app.get('/video-impressions', async (req, res) => {
-  try {
-    console.log('Fetching video impressions data...'); // Log when the endpoint is hit
-    const query = `
-      SELECT 
-        vi.id, 
-        vi.type, 
-        vi.video_id, 
-        vi.screen_id, 
-        vi.device_id, 
-        vi.name, 
-        vi.count, 
-        vi.duration, 
-        vi."timestamp", 
-        vi.uploaded_time_timestamp, 
-        vi.video_tag, 
-        vi.uploaded_date,
-        s.screenname,
-        s.area,
-        s.city,
-        s.reach
-      FROM 
-        public.video_impressions AS vi
-      LEFT JOIN 
-        public.screen_proposal AS s
-      ON 
-           vi.screen_id= s.screenid  -- Cast both to compatible type
-      ORDER BY 
-        vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
-    `;
-
-    const result = await pool.query(query);
-    console.log('Data retrieved successfully:', result.rows.length, 'rows'); // Log the number of rows fetched
-    res.render('video-impressions', { data: result.rows });
-  } catch (err) {
-    console.error('Error fetching data:', err); // Log the error details
-    res.status(500).send('Error fetching data');
-  }
-});
 
 
 
@@ -971,6 +933,50 @@ app.get('/update', isAuthenticated1, async (req, res) => {
   }
 });
 
+
+app.get('/video-impressions', async (req, res) => {
+  try {
+    console.log('Fetching video impressions data...'); // Log when the endpoint is hit
+
+    const query = `
+      SELECT 
+        vi.id, 
+        vi.type, 
+        vi.video_id, 
+        vi.screen_id, 
+        vi.device_id, 
+        vi.name, 
+        vi.count, 
+        vi.duration, 
+        vi."timestamp", 
+        vi.uploaded_time_timestamp, 
+        vi.video_tag, 
+        vi.uploaded_date,
+        s.screenname,
+        s.area,
+        s.city,
+        s.reach
+      FROM 
+        public.video_impressions AS vi
+      LEFT JOIN 
+        public.screen_proposal AS s
+      ON 
+        vi.screen_id = s.screenid  -- Cast both to compatible type
+      ORDER BY 
+        vi.uploaded_date DESC; -- Change DESC to ASC for ascending order
+    `;
+
+    console.log('Executing query:', query); // Log the query being executed
+    const result = await pool.query(query);
+
+    console.log('Data retrieved successfully:', result.rows.length, 'rows'); // Log the number of rows fetched
+
+    res.render('video-impressions', { data: result.rows });
+  } catch (err) {
+    console.error('Error fetching data:', err); // Log the error details
+    res.status(500).send('Error fetching data');
+  }
+});
 
 
 app.get('/status', isAuthenticated1, async (req, res) => {
