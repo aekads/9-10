@@ -14,6 +14,8 @@ const pool = new Pool({
   password: 'AekAds@24',
   port: 5432,
 });
+const cors = require('cors');
+app.use(cors());  // This will allow all domains. You can also specify a particular origin like `app.use(cors({ origin: 'https://cms.aekads.com' }));`
 
 const app = express();
 const port = process.env.PORT || 10000;
