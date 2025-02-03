@@ -571,6 +571,8 @@ wsServer.on('connection', async (ws, req) => {
       }
     } else if (data.type === 'Screenshot') {
       try {
+        const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    
         const query = `
           INSERT INTO screenshots (id, type, filename, image_url, size)
           VALUES ($1, $2, $3, $4, $5)
@@ -584,11 +586,11 @@ wsServer.on('connection', async (ws, req) => {
           data.imageUrl,
           data.size,
         ]);
-  
+    
         // Insert data into the new table (no conflict handling, always inserts)
         const logQuery = `
           INSERT INTO screenshots_log (id, type, filename, image_url, size, created_at)
-          VALUES ($1, $2, $3, $4, $5, NOW());
+          VALUES ($1, $2, $3, $4, $5, $6);
         `;
         await pool.query(logQuery, [
           data.id || data.Id,
@@ -596,14 +598,17 @@ wsServer.on('connection', async (ws, req) => {
           data.filename,
           data.imageUrl,
           data.size,
+          istTime,
         ]);
-  
+    
         console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
       } catch (error) {
         console.error('Failed to save Screenshot data:', error);
       }
     } else if (data.type === 'Screenshot2') {
       try {
+        const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+    
         const query = `
           INSERT INTO screenshots (id, filename2, image_url2, size2)
           VALUES ($1, $2, $3, $4)
@@ -616,24 +621,26 @@ wsServer.on('connection', async (ws, req) => {
           data.imageUrl2,
           data.size2,
         ]);
-  
+    
         // Insert into log table
         const logQuery = `
           INSERT INTO screenshots_log (id, filename2, image_url2, size2, created_at)
-          VALUES ($1, $2, $3, $4, NOW());
+          VALUES ($1, $2, $3, $4, $5);
         `;
         await pool.query(logQuery, [
           data.id || data.Id,
           data.filename2,
           data.imageUrl2,
           data.size2,
+          istTime,
         ]);
-  
+    
         console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
       } catch (error) {
         console.error('Failed to save Screenshot2 data:', error);
       }
     }
+    
    else if (data.type === 'video_impression') {
       console.log('[INFO] Processing "video_impression" message.');
 
