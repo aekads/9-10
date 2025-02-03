@@ -1395,6 +1395,33 @@ app.post('/BOTH_SCREENS_SCREENSORT/:id', (req, res) => {
   }
 });
 
+
+
+
+
+app.get('/BOTH_SCREENS_SCREENSORT/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'BOTH_SCREENS_SCREENSORT', message: 'BOTH_SCREENS_SCREENSORT' }));
+    sendEmail(clientId, 'BOTH_SCREENS_SCREENSORT');
+    res.json({ message: `BOTH_SCREENS_SCREENSORT command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
 app.post('/SAKI_SHOT_SML/:id', (req, res) => {
   const clientId = req.params.id;
   const ws = clients[clientId];
@@ -1588,7 +1615,21 @@ setInterval(() => {
 
 
 
+// // Schedule the BOTH_SCREENS_SCREENSORT every 3 hours
+setInterval(() => {
+  const clientIds = Object.keys(clients);
+  const BOTH_SCREENS_SCREENSORT = { type: 'BOTH_SCREENS_SCREENSORT', message: 'BOTH_SCREENS_SCREENSORT' };
 
+  clientIds.forEach(clientId => {
+    const ws = clients[clientId];
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(BOTH_SCREENS_SCREENSORT));
+      console.log(`BOTH_SCREENS_SCREENSORT command sent to client ${clientId}`);
+    }
+  });
+
+  console.log('Scheduled BOTH_SCREENS_SCREENSORT command sent to all connected clients');
+}, 10800000); // 10800000  milliseconds = 3 hours
 
 
 // Schedule the master-restart every minute
