@@ -1622,7 +1622,7 @@ setInterval(async () => {
     const clientIds = Object.keys(clients);
     console.log(`Connected client IDs: ${clientIds.join(', ')}`);
 
-    const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+    const VIDEO_IMPRESSION = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
 
     // Database query to filter clients based on Wi-Fi SSID
     const query = `
@@ -1644,7 +1644,7 @@ setInterval(async () => {
         const ws = clients[clientId];
         
         if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify(restartMessage));
+          ws.send(JSON.stringify(VIDEO_IMPRESSION));
           console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
         } else {
           console.log(`Client ${clientId} WebSocket not open or unavailable`);
