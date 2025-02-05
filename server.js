@@ -1615,33 +1615,46 @@ app.post('/master-restart', (req, res) => {
 // });
 
 
-
 setInterval(async () => {
   try {
-    const clientIds = Object.keys(clients);
-    const VIDEO_IMPRESSION = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+    console.log('Starting scheduled task for VIDEO_IMPRESSION...');
 
-    // Query to get relevant client names with the specific Wi-Fi network
+    const clientIds = Object.keys(clients);
+    console.log(`Connected client IDs: ${clientIds.join(', ')}`);
+
+    const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+
+    // Database query to filter clients based on Wi-Fi SSID
     const query = `
       SELECT client_name
       FROM public.device_configs
       WHERE wifi_network_ssid = 'Version: 5.6 (VersionCode: 6)';
     `;
-
+    
+    console.log('Executing database query...');
     const result = await pool.query(query);
+
     const validClientNames = result.rows.map(row => row.client_name);
+    console.log(`Filtered client names matching Wi-Fi SSID criteria: ${validClientNames.join(', ')}`);
 
     clientIds.forEach(clientId => {
+      console.log(`Processing client: ${clientId}`);
+
       if (validClientNames.includes(clientId)) {
         const ws = clients[clientId];
+        
         if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify(VIDEO_IMPRESSION));
+          ws.send(JSON.stringify(restartMessage));
           console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
+        } else {
+          console.log(`Client ${clientId} WebSocket not open or unavailable`);
         }
+      } else {
+        console.log(`Client ${clientId} does not match the filter criteria`);
       }
     });
 
-    console.log('Scheduled VIDEO_IMPRESSION command sent to filtered clients');
+    console.log('Scheduled VIDEO_IMPRESSION command task complete');
   } catch (error) {
     console.error('Error querying database or sending commands:', error);
   }
