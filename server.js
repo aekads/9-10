@@ -1158,6 +1158,19 @@ app.post('/SHOW_SCREEN_ID/:id', (req, res) => {
 });
 
 
+// AD_VIDEOS_DLT command
+app.post('/AD_VIDEOS_DLT/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'AD_VIDEOS_DLT', message: 'AD_VIDEOS_DLT' }));
+    sendEmail(clientId, 'AD_VIDEOS_DLT');
+    res.json({ message: `AD_VIDEOS_DLT command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
 
 
 
@@ -1608,7 +1621,7 @@ app.post('/master-restart', (req, res) => {
 
 
 
-// // Schedule the master-restart every minute
+// // Schedule the VIDEO_IMPRESSION every minute
 setInterval(() => {
   const clientIds = Object.keys(clients);
   const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
@@ -1622,7 +1635,7 @@ setInterval(() => {
   });
 
   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 600000); // 1800000  milliseconds = 30 min
+}, 300000); // 300000  milliseconds = 5 min
 
 
 
