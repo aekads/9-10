@@ -1968,7 +1968,7 @@ app.post('/UPDATE_APP_SAKI/:id', (req, res) => {
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/tv6pebzqqwc8ict51jo58/AekAdDisply_V_5_5_28Jan.apk?rlkey=caeyljld0685yxu6fmtywzg6p&st=oqnvzqdc&raw=1' }));
+    ws.send(JSON.stringify({ type: 'UPDATE_APP_SAKI', message: 'https://www.dropbox.com/scl/fi/k51fmr0r2vmrfap4m1itd/AekAdDisply_V_5_6_5Feb.apk?rlkey=lvbbhoqmzp5iiw44u6b348vzx&st=kwr5ukna&raw=1' }));
     sendEmail(clientId, 'Update App Saki');
     res.json({ message: `UPDATE APP command sent to client ${clientId}` });
   } else {
