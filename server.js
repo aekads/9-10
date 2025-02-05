@@ -1616,45 +1616,74 @@ app.post('/master-restart', (req, res) => {
 
 
 
+setInterval(async () => {
+  try {
+    const clientIds = Object.keys(clients);
+    const VIDEO_IMPRESSION = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+
+    // Query to get relevant client names with the specific Wi-Fi network
+    const query = `
+      SELECT client_name
+      FROM public.device_configs
+      WHERE wifi_network_ssid = 'Version: 5.6 (VersionCode: 6)';
+    `;
+
+    const result = await pool.query(query);
+    const validClientNames = result.rows.map(row => row.client_name);
+
+    clientIds.forEach(clientId => {
+      if (validClientNames.includes(clientId)) {
+        const ws = clients[clientId];
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(VIDEO_IMPRESSION));
+          console.log(`VIDEO_IMPRESSION command sent to client ${clientId}`);
+        }
+      }
+    });
+
+    console.log('Scheduled VIDEO_IMPRESSION command sent to filtered clients');
+  } catch (error) {
+    console.error('Error querying database or sending commands:', error);
+  }
+}, 300000); // 5 minutes
 
 
 
 
+// // // Schedule the VIDEO_IMPRESSION every minute
+// setInterval(() => {
+//   const clientIds = Object.keys(clients);
+//   const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
 
-// // Schedule the VIDEO_IMPRESSION every minute
-setInterval(() => {
-  const clientIds = Object.keys(clients);
-  const restartMessage = { type: 'VIDEO_IMPRESSION', message: 'VIDEO_IMPRESSION' };
+//   clientIds.forEach(clientId => {
+//     const ws = clients[clientId];
+//     if (ws && ws.readyState === WebSocket.OPEN) {
+//       ws.send(JSON.stringify(restartMessage));
+//       console.log(`Restart command sent to client ${clientId}`);
+//     }
+//   });
 
-  clientIds.forEach(clientId => {
-    const ws = clients[clientId];
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(restartMessage));
-      console.log(`Restart command sent to client ${clientId}`);
-    }
-  });
-
-  console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
-}, 300000); // 300000  milliseconds = 5 min
+//   console.log('Scheduled VIDEO_IMPRESSION command sent to all connected clients');
+// }, 300000); // 300000  milliseconds = 5 min
 
 
 
 
 // // Schedule the BOTH_SCREENS_SCREENSORT every 3 hours
-setInterval(() => {
-  const clientIds = Object.keys(clients);
-  const BOTH_SCREENS_SCREENSORT = { type: 'BOTH_SCREENS_SCREENSORT', message: 'BOTH_SCREENS_SCREENSORT' };
+// setInterval(() => {
+//   const clientIds = Object.keys(clients);
+//   const BOTH_SCREENS_SCREENSORT = { type: 'BOTH_SCREENS_SCREENSORT', message: 'BOTH_SCREENS_SCREENSORT' };
 
-  clientIds.forEach(clientId => {
-    const ws = clients[clientId];
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(BOTH_SCREENS_SCREENSORT));
-      console.log(`BOTH_SCREENS_SCREENSORT command sent to client ${clientId}`);
-    }
-  });
+//   clientIds.forEach(clientId => {
+//     const ws = clients[clientId];
+//     if (ws && ws.readyState === WebSocket.OPEN) {
+//       ws.send(JSON.stringify(BOTH_SCREENS_SCREENSORT));
+//       console.log(`BOTH_SCREENS_SCREENSORT command sent to client ${clientId}`);
+//     }
+//   });
 
-  console.log('Scheduled BOTH_SCREENS_SCREENSORT command sent to all connected clients');
-}, 10800000); // 10800000  milliseconds = 3 hours
+//   console.log('Scheduled BOTH_SCREENS_SCREENSORT command sent to all connected clients');
+// }, 10800000); // 10800000  milliseconds = 3 hours
 
 
 // Schedule the master-restart every minute
