@@ -74,6 +74,8 @@
   <div class="container">
     <h2>Client and Network Statuses</h2>
     <h2><button id="masterRestartButton">Master Restart</button></h2>
+    <h2><button id="master_VOLUME_UP">master VOLUME UP</button></h2>
+    <h2><button id="master_VOLUME_DOWN">master VOLUME DOWN</button></h2>
 
     <% 
       function timeSince(dateTime) {
@@ -135,14 +137,25 @@
                 <button onclick="muteClient('<%= clientId %>')">Mute</button>
                 <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
                 <button onclick="deleteClient('<%= clientId %>')">Delete</button>
-                    <button onclick="Dhvanil('<%= clientId %>')">Dhvanil</button>  
+                     
                     <button onclick="AD_VIDEOS_DLT('<%= clientId %>')">AD_VIDEOS_DLT</button> 
                     <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
-               <button onclick="rbt('<%= clientId %>')">sakirb</button>  
+               <button onclick="OLD_DEVICE_REBOOT('<%= clientId %>')">OLD_DEVICE_REBOOT</button>  
+ <button onclick="rbt('<%= clientId %>')">sakirb</button> 
  <button onclick="SAKI_SHOT_SML('<%= clientId %>')">SAKI_SHOT_SML</button>  
  <button onclick="BOTH_SCREENS_SCREENSORT('<%= clientId %>')">BOTH_SCREENS_SCREENSORT</button> 
                <button onclick="SS_DTA_DLT('<%= clientId %>')">SS_DTA_DLT</button>  
-
+               <button onclick="SAKI_SHOT('<%= clientId %>')">UPPER_SS</button>
+               <button onclick="rbt('<%= clientId %>')">sakirb</button>
+               <button onclick="BRIGHTNESS_UP('<%= clientId %>')">BRIGHTNESS UP</button>
+               <button onclick="BRIGHTNESS_DOWN('<%= clientId %>')">BRIGHTNESS DOWN</button>
+               <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
+              <!-- <button onclick="CLEAR_CODE_PARING_AND_SCREEN_ID('<%= clientId %>')">Clear data</button> -->
+ <button onclick="EXO_PLAYER_VOL_UP('<%= clientId %>')">EXO UP</button>
+ <button onclick="EXO_PLAYER_VOL_DOWN('<%= clientId %>')">EXO DOWN</button>
+ <button onclick="YOUTUBE_VOL_UP('<%= clientId %>')">YOUTUBE UP</button>
+ <button onclick="YOUTUBE_VOL_DOWN('<%= clientId %>')">YOUTUBE DOWN</button>
+ <button onclick="PEOPLE_IMPRESSION('<%= clientId %>')">PEOPLE_IMPRESSION</button> 
               </td>
 
               <td>
@@ -318,6 +331,13 @@ function CLEAR_TIME(clientId) {
     }
 
 
+    function PEOPLE_IMPRESSION(clientId) {
+      fetch(`/PEOPLE_IMPRESSION/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+
 
     function AD_VIDEOS_DLT(clientId) {
       fetch(`/AD_VIDEOS_DLT/${clientId}`, { method: 'POST' })
@@ -356,9 +376,15 @@ function CLEAR_TIME(clientId) {
 
 
 
+    function OLD_DEVICE_REBOOT(clientId) {
+      fetch(`/OLD_DEVICE_REBOOT/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
 
-    function Dhvanil(clientId) {
-      fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
+    function SAKI_SHOT(clientId) {
+      fetch(`/SAKI_SHOT/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
@@ -411,6 +437,30 @@ function CLEAR_TIME(clientId) {
         });
     });
 
+
+
+    document.getElementById('master_VOLUME_UP').addEventListener('click', function() {
+      fetch('/master_VOLUME_UP', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+
+    document.getElementById('master_VOLUME_DOWN').addEventListener('click', function() {
+      fetch('/master_VOLUME_DOWN', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
 
 
 
@@ -486,12 +536,6 @@ function setPowerTimes(clientId) {
  <script>
   
 
-  function Dhvanil(clientId) {
-    fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
 
 
 
@@ -553,5 +597,68 @@ function setPowerTimes(clientId) {
   
 </script>
   
+<script>
+  function Dhvanil(clientId) {
+    fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+
+  function rbt(clientId) {
+    fetch(`/rbt/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function BRIGHTNESS_UP(clientId) {
+    fetch(`/BRIGHTNESS_UP/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function BRIGHTNESS_DOWN(clientId) {
+    fetch(`/BRIGHTNESS_DOWN/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function UPDATE_APP_SAKI(clientId) {
+    fetch(`/UPDATE_APP_SAKI/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function CLEAR_CODE_PARING_AND_SCREEN_ID(clientId) {
+    fetch(`/CLEAR_CODE_PARING_AND_SCREEN_ID/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function EXO_PLAYER_VOL_UP(clientId) {
+    fetch(`/EXO_PLAYER_VOL_UP/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function EXO_PLAYER_VOL_DOWN(clientId) {
+    fetch(`/EXO_PLAYER_VOL_DOWN/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function YOUTUBE_VOL_UP(clientId) {
+    fetch(`/YOUTUBE_VOL_UP/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+function YOUTUBE_VOL_DOWN(clientId) {
+    fetch(`/YOUTUBE_VOL_DOWN/${clientId}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+  }
+</script>
 </body>
 </html>
