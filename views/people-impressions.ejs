@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Impressions</title>
+ <style>
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+ </style>
+</head>
+<body>
+    <h1>People Impressions Data</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Screen ID</th>
+                <th>Face Count</th>
+                <th>Male Count</th>
+                <th>Female Count</th>
+                <th>Age</th>
+                <th>Timestamp</th>
+                <th>Uploaded Date</th>
+                <th>Screen Name</th>
+                <th>Area</th>
+                <th>City</th>
+                <th>Reach</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% data.forEach(row => { %>
+                <tr>
+                    <td><%= row.id %></td>
+                    <td><%= row.screen_id %></td>
+                    <td><%= row.face_count %></td>
+                    <td><%= row.male_count %></td>
+                    <td><%= row.female_count %></td>
+                    <td><%= row.age %></td>
+                    <td><%= row.timestamp %></td>
+                    <td><%= row.uploaded_date %></td>
+                    <td><%= row.screenname %></td>
+                    <td><%= row.area %></td>
+                    <td><%= row.city %></td>
+                    <td><%= row.reach %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</body>
+</html>

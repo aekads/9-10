@@ -1100,6 +1100,45 @@ app.get('/video-impressions', async (req, res) => {
     res.status(500).send('Error fetching data');
   }
 });
+app.get('/people-impressions', async (req, res) => {
+  try {
+    console.log('Fetching people impressions data...'); // Log when the endpoint is hit
+
+    const query = `
+      SELECT 
+        pi.id, 
+        pi.screen_id, 
+        pi.face_count, 
+        pi.male_count, 
+        pi.female_count, 
+        pi.age, 
+        pi."timestamp", 
+        pi.uploaded_date,
+        s.screenname,
+        s.area,
+        s.city,
+        s.reach
+      FROM 
+        public.people_impressions AS pi
+      LEFT JOIN 
+        public.screen_proposal AS s
+      ON 
+        pi.screen_id = s.screenid
+      ORDER BY 
+        pi.uploaded_date DESC;
+    `;
+
+    console.log('Executing query:', query); // Log the query being executed
+    const result = await pool.query(query);
+
+    console.log('Data retrieved successfully:', result.rows.length, 'rows'); // Log the number of rows fetched
+
+    res.render('people-impressions', { data: result.rows });
+  } catch (err) {
+    console.error('Error fetching data:', err); // Log the error details
+    res.status(500).send('Error fetching data');
+  }
+});
 
 
 app.get('/status', isAuthenticated1, async (req, res) => {
