@@ -681,7 +681,7 @@ wsServer.on('connection', async (ws, req) => {
           await pool.query(updateQuery, updateParams);
 
           console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-          ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+          // ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
         } else {
           // Entry does not exist; insert a new record in the main table
           const insertQuery = `
@@ -706,7 +706,7 @@ wsServer.on('connection', async (ws, req) => {
           await pool.query(insertQuery, insertParams);
 
           console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-          ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+          // ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
         }
 
         // Insert into the new table (video_impressions_log)
@@ -737,7 +737,7 @@ wsServer.on('connection', async (ws, req) => {
         const errorMessage = `Failed to save video impression data: ${error.message}`;
         console.error('[ERROR]', errorMessage);
 
-        ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+        // ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
       }
     } 
     
@@ -778,7 +778,7 @@ wsServer.on('connection', async (ws, req) => {
               await pool.query(updateQuery, updateParams);
 
               console.log(`[SUCCESS] Updated people impression data for screen ID: ${data.screenId}, uploaded_date: ${uploadedDate}.`);
-              ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+              // ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
           } else {
               // Insert a new record
               const insertQuery = `
@@ -797,7 +797,7 @@ wsServer.on('connection', async (ws, req) => {
               await pool.query(insertQuery, insertParams);
 
               console.log(`[SUCCESS] People impression data saved for screen ID: ${data.screenId}.`);
-              ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+              // ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
           }
 
           // Insert into log table
@@ -820,7 +820,7 @@ wsServer.on('connection', async (ws, req) => {
 
       } catch (error) {
           console.error(`[ERROR] Failed to save people impression data: ${error.message}`);
-          ws.send(JSON.stringify({ status: 'error', message: error.message }));
+          // ws.send(JSON.stringify({ status: 'error', message: error.message }));
       }
   }else {
       console.log(`Unknown message type received: ${data.type}`);
