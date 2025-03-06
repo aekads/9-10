@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +14,19 @@
       background-color: #f4f4f4;
       color: #333;
     }
-    
+
     header {
       background-color: #4CAF50;
       color: white;
       padding: 10px 0;
       text-align: center;
     }
-    
-    h1, h2 {
+
+    h1,
+    h2 {
       color: #4CAF50;
     }
-    
+
     .container {
       width: 80%;
       margin: auto;
@@ -33,155 +35,186 @@
       background: white;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
     }
-    
-    table, th, td {
+
+    table,
+    th,
+    td {
       border: 1px solid #ccc;
     }
-    
-    th, td {
+
+    th,
+    td {
       padding: 10px;
       text-align: left;
     }
-    
+
     .online {
       color: green;
     }
-    
+
     .offline {
       color: red;
     }
-    
+
     .network-online {
       color: green;
     }
-    
+
     .network-offline {
       color: red;
     }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Status Page</h1>
   </header>
-  
+
   <div class="container">
     <h2>Client and Network Statuses</h2>
     <h2><button id="masterRestartButton">Master Restart</button></h2>
     <h2><button id="master_VOLUME_UP">master VOLUME UP</button></h2>
     <h2><button id="master_VOLUME_DOWN">master VOLUME DOWN</button></h2>
+    <h2><button id="master_VIDEO_IMPRESSION">master VIDEO IMPRESSION</button></h2>
+    <h2><button id="Master_UPDATE_APP_SAKI">master UPDATE APP</button></h2>
+    <h2><button id="master_EXO_PLAYER_VOL_DOWN">master_EXO_PLAYER_VOL_DOWN</button></h2>
+    <h2><button id="Master_EXO_PLAYER_VOL_UP">Master_EXO_PLAYER_VOL_UP</button></h2>
+    <% function timeSince(dateTime) { const seconds=Math.floor((Date.now() - new Date(dateTime)) / 1000); let
+      interval=Math.floor(seconds / 86400); if (interval>= 1) return interval + " day" + (interval > 1 ? "s" : "") + "
+      ago";
 
-    <% 
-      function timeSince(dateTime) {
-        const seconds = Math.floor((Date.now() - new Date(dateTime)) / 1000);
-        let interval = Math.floor(seconds / 86400);
-        if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
-        
-        interval = Math.floor(seconds / 3600);
-        if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
-        
-        interval = Math.floor(seconds / 60);
-        if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
-        
-        return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
+      interval = Math.floor(seconds / 3600);
+      if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+
+      interval = Math.floor(seconds / 60);
+      if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+
+      return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
       }
-    %>
-    <% if (Object.keys(clientStatuses).length > 0 || Object.keys(networkStatuses).length > 0) { %>
-      <table>
-        <thead>
-          <tr>
-            <th>Client ID</th>
-            <th>Screen Name</th> <!-- Add Screen Name column -->
-            <th>Client Status</th>
-            <th>Last Response Time</th>
-            <th>Network Status</th>
-            <th>Last Network Response Time</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% Object.keys(clientStatuses).forEach(clientId => { %>
+      %>
+      <% if (Object.keys(clientStatuses).length> 0 || Object.keys(networkStatuses).length > 0) { %>
+        <table>
+          <thead>
             <tr>
-              <td><strong><%= clientId %></strong></td>
-  
-              <!-- Match screen name with clientId -->
-              <% 
-                const screen = screens.find(screen => screen.screenid == clientId); 
-                if (screen) { 
-              %>
-                <td><%= screen.screenname %></td>
-              <% } else { %>
-                <td>No screen available</td>
-              <% } %>
-  
-              <td class="<%= clientStatuses[clientId].status %>"><%= clientStatuses[clientId].status %></td>
-              <td><%= timeSince(clientStatuses[clientId].dateTime) %></td>
-              <% if (networkStatuses[clientId]) { %>
-                <td class="network-<%= networkStatuses[clientId].status %>"><%= networkStatuses[clientId].status %></td>
-                <td><%= timeSince(networkStatuses[clientId].dateTime) %></td>
-              <% } else { %>
-                <td colspan="2">No network status available</td>
-              <% } %>
-               <td>
-                <button onclick="restartClient('<%= clientId %>')">Restart</button>
-                <button onclick="SHOW_SCREEN_ID('<%= clientId %>')">SHOW_SCREEN_ID</button> 
-                <button onclick="HIDE_SCREEN_ID('<%= clientId %>')">HIDE_SCREEN_ID</button> 
-                <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
-                <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-                <button onclick="muteClient('<%= clientId %>')">Mute</button>
-                <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
-                <button onclick="deleteClient('<%= clientId %>')">Delete</button>
-                     
-                    <button onclick="AD_VIDEOS_DLT('<%= clientId %>')">AD_VIDEOS_DLT</button> 
-                    <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
-               <button onclick="OLD_DEVICE_REBOOT('<%= clientId %>')">OLD_DEVICE_REBOOT</button>  
- <button onclick="rbt('<%= clientId %>')">sakirb</button> 
- <button onclick="SAKI_SHOT_SML('<%= clientId %>')">SAKI_SHOT_SML</button>  
- <button onclick="BOTH_SCREENS_SCREENSORT('<%= clientId %>')">BOTH_SCREENS_SCREENSORT</button> 
-               <button onclick="SS_DTA_DLT('<%= clientId %>')">SS_DTA_DLT</button>  
-               <button onclick="SAKI_SHOT('<%= clientId %>')">UPPER_SS</button>
-               <button onclick="rbt('<%= clientId %>')">sakirb</button>
-               <button onclick="BRIGHTNESS_UP('<%= clientId %>')">BRIGHTNESS UP</button>
-               <button onclick="BRIGHTNESS_DOWN('<%= clientId %>')">BRIGHTNESS DOWN</button>
-               <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
-              <!-- <button onclick="CLEAR_CODE_PARING_AND_SCREEN_ID('<%= clientId %>')">Clear data</button> -->
- <button onclick="EXO_PLAYER_VOL_UP('<%= clientId %>')">EXO UP</button>
- <button onclick="EXO_PLAYER_VOL_DOWN('<%= clientId %>')">EXO DOWN</button>
- <button onclick="YOUTUBE_VOL_UP('<%= clientId %>')">YOUTUBE UP</button>
- <button onclick="YOUTUBE_VOL_DOWN('<%= clientId %>')">YOUTUBE DOWN</button>
- <button onclick="PEOPLE_IMPRESSION('<%= clientId %>')">PEOPLE_IMPRESSION</button> 
-              </td>
-
-              <td>
-              <input type="time" id="powerOnTime-<%= clientId %>" 
-                     value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[0] : '06:00' %>" />
-              <input type="time" id="powerOffTime-<%= clientId %>" 
-                     value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[1] : '14:00' %>" />
-              <input type="time" id="powerOnTime1-<%= clientId %>" 
-                     value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[0] : '14:05' %>" />
-              <input type="time" id="powerOffTime1-<%= clientId %>" 
-                     value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[1] : '23:59' %>" />
-              <button onclick="setPowerTimes('<%= clientId %>')">Set Power Times</button>
-              <button onclick="CLEAR_TIME('<%= clientId %>')">CLEAR_TIME</button>
-            </td>
-  
-
-
+              <th>Client ID</th>
+              <th>Screen Name</th> <!-- Add Screen Name column -->
+              <th>Client Status</th>
+              <th>Last Response Time</th>
+              <th>Network Status</th>
+              <th>Last Network Response Time</th>
+              <th>Actions</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    <% } else { %>
-      <p>No clients or network statuses available at the moment.</p>
-    <% } %>
+          </thead>
+          <tbody>
+            <% Object.keys(clientStatuses).forEach(clientId=> { %>
+              <tr>
+                <td><strong>
+                    <%= clientId %>
+                  </strong></td>
+
+                <!-- Match screen name with clientId -->
+                <% const screen=screens.find(screen=> screen.screenid == clientId);
+                  if (screen) {
+                  %>
+                  <td>
+                    <%= screen.screenname %>
+                  </td>
+                  <% } else { %>
+                    <td>No screen available</td>
+                    <% } %>
+
+                      <td class="<%= clientStatuses[clientId].status %>">
+                        <%= clientStatuses[clientId].status %>
+                      </td>
+                      <td>
+                        <%= timeSince(clientStatuses[clientId].dateTime) %>
+                      </td>
+                      <td>
+                        <div style="display: flex; flex-direction: column;">
+                          <label for="mainVolume-<%= clientId %>">Main Volume</label>
+                          <input type="range" onchange="updateVolume('mainVolume', '<%= clientId %>', this.value)"
+                            name="mainVolume-<%= clientId %>" min="0" max="15" value="8">
+
+                          <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
+                          <input type="range" onchange="updateVolume('exoVolume', '<%= clientId %>', this.value)"
+                            name="exoVolume-<%= clientId %>" min="0" max="15" value="8">
+
+                          <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
+                          <input type="range" onchange="updateVolume('youTubeVolume', '<%= clientId %>', this.value)"
+                            name="youTubeVolume-<%= clientId %>" min="0" max="15" value="8">
+                        </div>
+                      </td>
+
+
+                      <% if (networkStatuses[clientId]) { %>
+                        <td>
+                          <%= timeSince(networkStatuses[clientId].dateTime) %>
+                        </td>
+                        <% } else { %>
+                          <td>No network status available</td>
+                          <% } %>
+                            <td>
+                              <button onclick="restartClient('<%= clientId %>')">Restart</button>
+                              <button onclick="SHOW_SCREEN_ID('<%= clientId %>')">SHOW_SCREEN_ID</button>
+                              <button onclick="HIDE_SCREEN_ID('<%= clientId %>')">HIDE_SCREEN_ID</button>
+                              <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
+                              <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
+                              <button onclick="muteClient('<%= clientId %>')">Mute</button>
+                              <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
+                              <button onclick="deleteClient('<%= clientId %>')">Delete</button>
+
+                              <button onclick="AD_VIDEOS_DLT('<%= clientId %>')">AD_VIDEOS_DLT</button>
+                              <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
+                              <button onclick="OLD_DEVICE_REBOOT('<%= clientId %>')">OLD_DEVICE_REBOOT</button>
+                              <button onclick="rbt('<%= clientId %>')">sakirb</button>
+                              <button onclick="SAKI_SHOT_SML('<%= clientId %>')">SAKI_SHOT_SML</button>
+                              <button
+                                onclick="BOTH_SCREENS_SCREENSORT('<%= clientId %>')">BOTH_SCREENS_SCREENSORT</button>
+                              <button onclick="SS_DTA_DLT('<%= clientId %>')">SS_DTA_DLT</button>
+                              <button onclick="SAKI_SHOT('<%= clientId %>')">UPPER_SS</button>
+                              <button onclick="rbt('<%= clientId %>')">sakirb</button>
+                              <button onclick="BRIGHTNESS_UP('<%= clientId %>')">BRIGHTNESS UP</button>
+                              <button onclick="BRIGHTNESS_DOWN('<%= clientId %>')">BRIGHTNESS DOWN</button>
+                              <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
+                              <!-- <button onclick="CLEAR_CODE_PARING_AND_SCREEN_ID('<%= clientId %>')">Clear data</button> -->
+                              <button onclick="EXO_PLAYER_VOL_UP('<%= clientId %>')">EXO UP</button>
+                              <button onclick="EXO_PLAYER_VOL_DOWN('<%= clientId %>')">EXO DOWN</button>
+                              <button onclick="YOUTUBE_VOL_UP('<%= clientId %>')">YOUTUBE UP</button>
+                              <button onclick="YOUTUBE_VOL_DOWN('<%= clientId %>')">YOUTUBE DOWN</button>
+                              <button onclick="VIDEO_IMPRESSION('<%= clientId %>')">VIDEO_IMPRESSION</button>
+                            </td>
+
+                            <td>
+                              <input type="time" id="powerOnTime-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[0] : '06:00' %>" />
+                              <input type="time" id="powerOffTime-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[1] : '14:00' %>" />
+                              <input type="time" id="powerOnTime1-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[0] : '14:05' %>" />
+                              <input type="time" id="powerOffTime1-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[1] : '23:59' %>" />
+                              <button onclick="setPowerTimes('<%= clientId %>')">Set Power Times</button>
+                              <button onclick="CLEAR_TIME('<%= clientId %>')">CLEAR_TIME</button>
+                            </td>
+
+
+
+              </tr>
+              <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+          <p>No clients or network statuses available at the moment.</p>
+          <% } %>
   </div>
-  
+
   <!-- <script>
     function restartClient(clientId) {
       fetch(`/restart-client/${clientId}`, {
@@ -255,7 +288,7 @@
     }
   </script> -->
   <script>
-  function UPDATE_APP_SAKI(clientId) {
+    function UPDATE_APP_SAKI(clientId) {
       fetch(`/UPDATE_APP_SAKI/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
@@ -267,7 +300,7 @@
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-function CLEAR_TIME(clientId) {
+    function CLEAR_TIME(clientId) {
       fetch(`/CLEAR_TIME/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
@@ -291,28 +324,28 @@ function CLEAR_TIME(clientId) {
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-  
+
     function volumeUp(clientId) {
       fetch(`/volume-up/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-  
+
     function volumeDown(clientId) {
       fetch(`/volume-down/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-  
+
     function muteClient(clientId) {
       fetch(`/mute-client/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
     }
-  
+
     function unmuteClient(clientId) {
       fetch(`/unmute-client/${clientId}`, { method: 'POST' })
         .then(response => response.json())
@@ -323,7 +356,7 @@ function CLEAR_TIME(clientId) {
 
 
 
- function BOTH_SCREENS_SCREENSORT(clientId) {
+    function BOTH_SCREENS_SCREENSORT(clientId) {
       fetch(`/BOTH_SCREENS_SCREENSORT/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
@@ -331,8 +364,8 @@ function CLEAR_TIME(clientId) {
     }
 
 
-    function PEOPLE_IMPRESSION(clientId) {
-      fetch(`/PEOPLE_IMPRESSION/${clientId}`, { method: 'POST' })
+    function VIDEO_IMPRESSION(clientId) {
+      fetch(`/VIDEO_IMPRESSION/${clientId}`, { method: 'POST' })
         .then(response => response.json())
         .then(data => alert(data.message))
         .catch(error => console.error('Error:', error));
@@ -364,17 +397,18 @@ function CLEAR_TIME(clientId) {
         .catch(error => console.error('Error:', error));
     }
 
-
-
-
-
-
-
-
-
-
-
-
+    function updateVolume(volumeType, clientId, volume) {
+      fetch(`/${volumeType}/${clientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ volume })
+      })
+        .then(response => response.json())
+        .then(data => alert(`${volumeType} updated to ${volume}: ${data.message}`))
+        .catch(error => console.error('Error:', error));
+    }
 
     function OLD_DEVICE_REBOOT(clientId) {
       fetch(`/OLD_DEVICE_REBOOT/${clientId}`, { method: 'POST' })
@@ -414,19 +448,19 @@ function CLEAR_TIME(clientId) {
 
 
     function deleteClient(clientId) {
-  fetch(`/delete-client/${clientId}`, { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      alert(data.message);
-      // Refresh the page after successful deletion
-      window.location.reload();
-    })
-    .catch(error => console.error('Error:', error));
-}
+      fetch(`/delete-client/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          // Refresh the page after successful deletion
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
   </script>
   <script>
-    document.getElementById('masterRestartButton').addEventListener('click', function() {
+    document.getElementById('masterRestartButton').addEventListener('click', function () {
       fetch('/master-restart', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
@@ -439,7 +473,7 @@ function CLEAR_TIME(clientId) {
 
 
 
-    document.getElementById('master_VOLUME_UP').addEventListener('click', function() {
+    document.getElementById('master_VOLUME_UP').addEventListener('click', function () {
       fetch('/master_VOLUME_UP', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
@@ -451,8 +485,56 @@ function CLEAR_TIME(clientId) {
     });
 
 
-    document.getElementById('master_VOLUME_DOWN').addEventListener('click', function() {
+    document.getElementById('master_VOLUME_DOWN').addEventListener('click', function () {
       fetch('/master_VOLUME_DOWN', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+
+    document.getElementById('master_VIDEO_IMPRESSION').addEventListener('click', function () {
+      fetch('/master_VIDEO_IMPRESSION', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+
+    document.getElementById('Master_EXO_PLAYER_VOL_UP').addEventListener('click', function () {
+      fetch('/Master_EXO_PLAYER_VOL_UP', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+    document.getElementById('master_EXO_PLAYER_VOL_DOWN').addEventListener('click', function () {
+      fetch('/master_EXO_PLAYER_VOL_DOWN', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+
+
+
+    document.getElementById('Master_UPDATE_APP_SAKI').addEventListener('click', function () {
+      fetch('/Master_UPDATE_APP_SAKI', { method: 'POST' })
         .then(response => response.json())
         .then(data => {
           alert(data.message);
@@ -470,27 +552,25 @@ function CLEAR_TIME(clientId) {
 
 
 
-function setPowerTimes(clientId) {
-    const powerOnTime = document.getElementById(`powerOnTime-${clientId}`).value;
-    const powerOffTime = document.getElementById(`powerOffTime-${clientId}`).value;
-    const powerOnTime1 = document.getElementById(`powerOnTime1-${clientId}`).value;
-    const powerOffTime1 = document.getElementById(`powerOffTime1-${clientId}`).value;
-    const timeData = `${powerOnTime}-${powerOffTime},${powerOnTime1}-${powerOffTime1}`;
 
-    fetch(`/set-power-times/${clientId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ times: timeData }),
-    })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
+    function setPowerTimes(clientId) {
+      const powerOnTime = document.getElementById(`powerOnTime-${clientId}`).value;
+      const powerOffTime = document.getElementById(`powerOffTime-${clientId}`).value;
+      const powerOnTime1 = document.getElementById(`powerOnTime1-${clientId}`).value;
+      const powerOffTime1 = document.getElementById(`powerOffTime1-${clientId}`).value;
+      const timeData = `${powerOnTime}-${powerOffTime},${powerOnTime1}-${powerOffTime1}`;
 
-
-
+      fetch(`/set-power-times/${clientId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ times: timeData }),
+      })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
 
 
 
@@ -531,25 +611,12 @@ function setPowerTimes(clientId) {
 
 
 
-    
+
+
+
+
   </script>
- <script>
-  
-
-
-
-
-
-
-
-
-
-  function rbt(clientId) {
-    fetch(`/rbt/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
+  <script>
 
 
 
@@ -560,6 +627,12 @@ function setPowerTimes(clientId) {
 
 
 
+    function rbt(clientId) {
+      fetch(`/rbt/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
 
 
 
@@ -594,71 +667,82 @@ function setPowerTimes(clientId) {
 
 
 
-  
-</script>
-  
-<script>
-  function Dhvanil(clientId) {
-    fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
 
-  function rbt(clientId) {
-    fetch(`/rbt/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function BRIGHTNESS_UP(clientId) {
-    fetch(`/BRIGHTNESS_UP/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function BRIGHTNESS_DOWN(clientId) {
-    fetch(`/BRIGHTNESS_DOWN/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function UPDATE_APP_SAKI(clientId) {
-    fetch(`/UPDATE_APP_SAKI/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function CLEAR_CODE_PARING_AND_SCREEN_ID(clientId) {
-    fetch(`/CLEAR_CODE_PARING_AND_SCREEN_ID/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function EXO_PLAYER_VOL_UP(clientId) {
-    fetch(`/EXO_PLAYER_VOL_UP/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function EXO_PLAYER_VOL_DOWN(clientId) {
-    fetch(`/EXO_PLAYER_VOL_DOWN/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function YOUTUBE_VOL_UP(clientId) {
-    fetch(`/YOUTUBE_VOL_UP/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-function YOUTUBE_VOL_DOWN(clientId) {
-    fetch(`/YOUTUBE_VOL_DOWN/${clientId}`, { method: 'POST' })
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => console.error('Error:', error));
-  }
-</script>
+
+
+
+
+
+
+
+
+
+
+  </script>
+
+  <script>
+    function Dhvanil(clientId) {
+      fetch(`/Dhvanil/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+
+    function rbt(clientId) {
+      fetch(`/rbt/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function BRIGHTNESS_UP(clientId) {
+      fetch(`/BRIGHTNESS_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function BRIGHTNESS_DOWN(clientId) {
+      fetch(`/BRIGHTNESS_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function UPDATE_APP_SAKI(clientId) {
+      fetch(`/UPDATE_APP_SAKI/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function CLEAR_CODE_PARING_AND_SCREEN_ID(clientId) {
+      fetch(`/CLEAR_CODE_PARING_AND_SCREEN_ID/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function EXO_PLAYER_VOL_UP(clientId) {
+      fetch(`/EXO_PLAYER_VOL_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function EXO_PLAYER_VOL_DOWN(clientId) {
+      fetch(`/EXO_PLAYER_VOL_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function YOUTUBE_VOL_UP(clientId) {
+      fetch(`/YOUTUBE_VOL_UP/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    function YOUTUBE_VOL_DOWN(clientId) {
+      fetch(`/YOUTUBE_VOL_DOWN/${clientId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+  </script>
 </body>
+
 </html>

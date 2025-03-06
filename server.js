@@ -1290,6 +1290,22 @@ app.post('/restart-client/:id', (req, res) => {
 
 
 
+// Volume update command
+app.post('/:volumeType/:id', (req, res) => {
+  const clientId = req.params.id;
+  const volumeType = req.params.volumeType; // mainVolume, exoVolume, youTubeVolume
+  const volume = req.body.volume; // Get volume from request body
+  const ws = clients[clientId];
+
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: volumeType, volume: volume }));
+    res.json({ message: `${volumeType} updated to ${volume} for client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
+
+
 
 // HIDE_SCREEN_ID command
 app.post('/HIDE_SCREEN_ID/:id', (req, res) => {
