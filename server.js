@@ -715,8 +715,10 @@ wsServer.on('connection', async (ws, req) => {
                     ws.send(JSON.stringify({
                         status: 'success',
                         message: 'Data saved successfully.',
-                        type: data.type
+                        type: data.type,
+                        video_tag: data.video_tag
                     }));
+
 
                 } else {
                     // Entry does not exist; insert a new record in the main table
@@ -745,7 +747,8 @@ wsServer.on('connection', async (ws, req) => {
                     ws.send(JSON.stringify({
                         status: 'success',
                         message: 'Data saved successfully.',
-                        type: data.type
+                        type: data.type,
+                        video_tag: data.video_tag
                     }));
 
                 }
