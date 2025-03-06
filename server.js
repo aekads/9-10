@@ -716,7 +716,7 @@ wsServer.on('connection', async (ws, req) => {
                         status: 'success',
                         message: 'Data saved successfully.',
                         type: 'VIDEO_IMPRESSION',
-                        video_tag: data.video_tag
+                        video_id: data.video_id
                     }));
 
 
@@ -748,7 +748,7 @@ wsServer.on('connection', async (ws, req) => {
                         status: 'success',
                         message: 'Data saved successfully.',
                         type: 'VIDEO_IMPRESSION',    
-                        video_tag: data.video_tag
+                        video_id: data.video_id
                     }));
 
                 }
