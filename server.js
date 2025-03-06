@@ -712,7 +712,7 @@ wsServer.on('connection', async (ws, req) => {
           await pool.query(updateQuery, updateParams);
 
           console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-          // ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+          ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
         } else {
           // Entry does not exist; insert a new record in the main table
           const insertQuery = `
