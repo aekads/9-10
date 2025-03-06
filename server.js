@@ -1293,7 +1293,7 @@ app.post('/restart-client/:id', (req, res) => {
 // Volume update command
 app.post('/:volumeType/:id', (req, res) => {
   const clientId = req.params.id;
-  const volumeType = req.params.volumeType; // mainVolume, exoVolume, youTubeVolume
+  const volumeType = req.params.volumeType; // MAIN_VOL_SEEKBAR, exoVolume, youTubeVolume
   const volume = req.body.volume; // Get volume from request body
   const ws = clients[clientId];
 
