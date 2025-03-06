@@ -86,19 +86,23 @@
     <h2><button id="Master_UPDATE_APP_SAKI">master UPDATE APP</button></h2>
     <h2><button id="master_EXO_PLAYER_VOL_DOWN">master_EXO_PLAYER_VOL_DOWN</button></h2>
     <h2><button id="Master_EXO_PLAYER_VOL_UP">Master_EXO_PLAYER_VOL_UP</button></h2>
-    <% function timeSince(dateTime) { const seconds=Math.floor((Date.now() - new Date(dateTime)) / 1000); let
-      interval=Math.floor(seconds / 86400); if (interval>= 1) return interval + " day" + (interval > 1 ? "s" : "") + "
-      ago";
+    <%
+function timeSince(dateTime) {
+    const seconds = Math.floor((Date.now() - new Date(dateTime)) / 1000);
+    let interval = Math.floor(seconds / 86400);
+    
+    if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
 
-      interval = Math.floor(seconds / 3600);
-      if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
 
-      interval = Math.floor(seconds / 60);
-      if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
 
-      return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
-      }
-      %>
+    return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
+}
+%>
+
       <% if (Object.keys(clientStatuses).length> 0 || Object.keys(networkStatuses).length > 0) { %>
         <table>
           <thead>
@@ -113,103 +117,138 @@
             </tr>
           </thead>
           <tbody>
-            <% Object.keys(clientStatuses).forEach(clientId => { %>
+            <% Object.keys(clientStatuses).forEach(clientId=> { %>
               <tr>
-                <td><strong><%= clientId %></strong></td>
-          
+                <td><strong>
+                    <%= clientId %>
+                  </strong></td>
+
                 <!-- Match screen name with clientId -->
-                <% var screen = screens.find(screen => screen.screenid == clientId); %>
-                <% if (screen) { %>
-                  <td><%= screen.screenname %></td>
-                <% } else { %>
-                  <td>No screen available</td>
-                <% } %>
-          
-                <td class="<%= clientStatuses[clientId].status %>">
-                  <%= clientStatuses[clientId].status %>
-                </td>
-                <td><%= timeSince(clientStatuses[clientId].dateTime) %></td>
-          
-                <td>
-                  <div style="display: flex; flex-direction: column;">
-                    <label for="mainVolume-<%= clientId %>">Main Volume</label>
-                    <input type="range" onchange="updateVolume('mainVolume', '<%= clientId %>', this.value)" 
-                      name="mainVolume-<%= clientId %>" min="0" max="15" value="8">
-          
-                    <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
-                    <input type="range" onchange="updateVolume('exoVolume', '<%= clientId %>', this.value)" 
-                      name="exoVolume-<%= clientId %>" min="0" max="15" value="8">
-          
-                    <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
-                    <input type="range" onchange="updateVolume('youTubeVolume', '<%= clientId %>', this.value)" 
-                      name="youTubeVolume-<%= clientId %>" min="0" max="15" value="8">
-                  </div>
-                </td>
-          
-                <% if (networkStatuses[clientId] && networkStatuses[clientId].dateTime) { %>
-                  <td><%= timeSince(networkStatuses[clientId].dateTime) %></td>
-                <% } else { %>
-                  <td>No network status available</td>
-                <% } %>
-          
-                <td>
-                  <button onclick="restartClient('<%= clientId %>')">Restart</button>
-                  <button onclick="SHOW_SCREEN_ID('<%= clientId %>')">SHOW_SCREEN_ID</button>
-                  <button onclick="HIDE_SCREEN_ID('<%= clientId %>')">HIDE_SCREEN_ID</button>
-                  <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
-                  <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
-                  <button onclick="muteClient('<%= clientId %>')">Mute</button>
-                  <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
-                  <button onclick="deleteClient('<%= clientId %>')">Delete</button>
-                  <button onclick="AD_VIDEOS_DLT('<%= clientId %>')">AD_VIDEOS_DLT</button>
-                  <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
-                  <button onclick="OLD_DEVICE_REBOOT('<%= clientId %>')">OLD_DEVICE_REBOOT</button>
-                  <button onclick="rbt('<%= clientId %>')">sakirb</button>
-                  <button onclick="SAKI_SHOT_SML('<%= clientId %>')">SAKI_SHOT_SML</button>
-                  <button onclick="BOTH_SCREENS_SCREENSORT('<%= clientId %>')">BOTH_SCREENS_SCREENSORT</button>
-                  <button onclick="SS_DTA_DLT('<%= clientId %>')">SS_DTA_DLT</button>
-                  <button onclick="SAKI_SHOT('<%= clientId %>')">UPPER_SS</button>
-                  <button onclick="rbt('<%= clientId %>')">sakirb</button>
-                  <button onclick="BRIGHTNESS_UP('<%= clientId %>')">BRIGHTNESS UP</button>
-                  <button onclick="BRIGHTNESS_DOWN('<%= clientId %>')">BRIGHTNESS DOWN</button>
-                  <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
-                  <button onclick="EXO_PLAYER_VOL_UP('<%= clientId %>')">EXO UP</button>
-                  <button onclick="EXO_PLAYER_VOL_DOWN('<%= clientId %>')">EXO DOWN</button>
-                  <button onclick="YOUTUBE_VOL_UP('<%= clientId %>')">YOUTUBE UP</button>
-                  <button onclick="YOUTUBE_VOL_DOWN('<%= clientId %>')">YOUTUBE DOWN</button>
-                  <button onclick="VIDEO_IMPRESSION('<%= clientId %>')">VIDEO_IMPRESSION</button>
-                </td>
-          
-                <td>
-                  <input type="time" id="powerOnTime-<%= clientId %>"
-                    value="<%= (clientStatuses[clientId].power_times && clientStatuses[clientId].power_times.split(',')[0]) ? 
-                    clientStatuses[clientId].power_times.split(',')[0].split('-')[0] : '06:00' %>" />
-          
-                  <input type="time" id="powerOffTime-<%= clientId %>"
-                    value="<%= (clientStatuses[clientId].power_times && clientStatuses[clientId].power_times.split(',')[0]) ? 
-                    clientStatuses[clientId].power_times.split(',')[0].split('-')[1] : '14:00' %>" />
-          
-                  <input type="time" id="powerOnTime1-<%= clientId %>"
-                    value="<%= (clientStatuses[clientId].power_times && clientStatuses[clientId].power_times.split(',')[1]) ? 
-                    clientStatuses[clientId].power_times.split(',')[1].split('-')[0] : '14:05' %>" />
-          
-                  <input type="time" id="powerOffTime1-<%= clientId %>"
-                    value="<%= (clientStatuses[clientId].power_times && clientStatuses[clientId].power_times.split(',')[1]) ? 
-                    clientStatuses[clientId].power_times.split(',')[1].split('-')[1] : '23:59' %>" />
-          
-                  <button onclick="setPowerTimes('<%= clientId %>')">Set Power Times</button>
-                  <button onclick="CLEAR_TIME('<%= clientId %>')">CLEAR_TIME</button>
-                </td>
+                <% const screen=screens.find(screen=> screen.screenid == clientId);
+                  if (screen) {
+                  %>
+                  <td>
+                    <%= screen.screenname %>
+                  </td>
+                  <% } else { %>
+                    <td>No screen available</td>
+                    <% } %>
+
+                      <td class="<%= clientStatuses[clientId].status %>">
+                        <%= clientStatuses[clientId].status %>
+                      </td>
+                      <td>
+                        <%= timeSince(clientStatuses[clientId].dateTime) %>
+                      </td>
+                      <td>
+                        <div style="display: flex; flex-direction: column;">
+                          <label for="mainVolume-<%= clientId %>">Main Volume</label>
+                          <input type="range" onchange="updateVolume('mainVolume', '<%= clientId %>', this.value)"
+                            name="mainVolume-<%= clientId %>" min="0" max="15" value="8">
+
+                          <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
+                          <input type="range" onchange="updateVolume('exoVolume', '<%= clientId %>', this.value)"
+                            name="exoVolume-<%= clientId %>" min="0" max="15" value="8">
+
+                          <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
+                          <input type="range" onchange="updateVolume('youTubeVolume', '<%= clientId %>', this.value)"
+                            name="youTubeVolume-<%= clientId %>" min="0" max="15" value="8">
+                        </div>
+                      </td>
+
+
+                      <% if (networkStatuses[clientId]) { %>
+                        <td>
+                          <%= timeSince(networkStatuses[clientId].dateTime) %>
+                        </td>
+                        <% } else { %>
+                          <td>No network status available</td>
+                          <% } %>
+                            <td>
+                              <button onclick="restartClient('<%= clientId %>')">Restart</button>
+                              <button onclick="SHOW_SCREEN_ID('<%= clientId %>')">SHOW_SCREEN_ID</button>
+                              <button onclick="HIDE_SCREEN_ID('<%= clientId %>')">HIDE_SCREEN_ID</button>
+                              <button onclick="volumeUp('<%= clientId %>')">Volume Up</button>
+                              <button onclick="volumeDown('<%= clientId %>')">Volume Down</button>
+                              <button onclick="muteClient('<%= clientId %>')">Mute</button>
+                              <button onclick="unmuteClient('<%= clientId %>')">Unmute</button>
+                              <button onclick="deleteClient('<%= clientId %>')">Delete</button>
+
+                              <button onclick="AD_VIDEOS_DLT('<%= clientId %>')">AD_VIDEOS_DLT</button>
+                              <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
+                              <button onclick="OLD_DEVICE_REBOOT('<%= clientId %>')">OLD_DEVICE_REBOOT</button>
+                              <button onclick="rbt('<%= clientId %>')">sakirb</button>
+                              <button onclick="SAKI_SHOT_SML('<%= clientId %>')">SAKI_SHOT_SML</button>
+                              <button
+                                onclick="BOTH_SCREENS_SCREENSORT('<%= clientId %>')">BOTH_SCREENS_SCREENSORT</button>
+                              <button onclick="SS_DTA_DLT('<%= clientId %>')">SS_DTA_DLT</button>
+                              <button onclick="SAKI_SHOT('<%= clientId %>')">UPPER_SS</button>
+                              <button onclick="rbt('<%= clientId %>')">sakirb</button>
+                              <button onclick="BRIGHTNESS_UP('<%= clientId %>')">BRIGHTNESS UP</button>
+                              <button onclick="BRIGHTNESS_DOWN('<%= clientId %>')">BRIGHTNESS DOWN</button>
+                              <button onclick="UPDATE_APP_SAKI('<%= clientId %>')">UPDATE APP</button>
+                              <!-- <button onclick="CLEAR_CODE_PARING_AND_SCREEN_ID('<%= clientId %>')">Clear data</button> -->
+                              <button onclick="EXO_PLAYER_VOL_UP('<%= clientId %>')">EXO UP</button>
+                              <button onclick="EXO_PLAYER_VOL_DOWN('<%= clientId %>')">EXO DOWN</button>
+                              <button onclick="YOUTUBE_VOL_UP('<%= clientId %>')">YOUTUBE UP</button>
+                              <button onclick="YOUTUBE_VOL_DOWN('<%= clientId %>')">YOUTUBE DOWN</button>
+                              <button onclick="VIDEO_IMPRESSION('<%= clientId %>')">VIDEO_IMPRESSION</button>
+                            </td>
+
+                            <td>
+                              <input type="time" id="powerOnTime-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[0] : '06:00' %>" />
+                              <input type="time" id="powerOffTime-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[0].split('-')[1] : '14:00' %>" />
+                              <input type="time" id="powerOnTime1-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[0] : '14:05' %>" />
+                              <input type="time" id="powerOffTime1-<%= clientId %>"
+                                value="<%= clientStatuses[clientId].power_times ? clientStatuses[clientId].power_times.split(',')[1].split('-')[1] : '23:59' %>" />
+                              <button onclick="setPowerTimes('<%= clientId %>')">Set Power Times</button>
+                              <button onclick="CLEAR_TIME('<%= clientId %>')">CLEAR_TIME</button>
+                            </td>
+
+
+
               </tr>
-            <% }) %>
+              <% }) %>
           </tbody>
-          
         </table>
         <% } else { %>
           <p>No clients or network statuses available at the moment.</p>
           <% } %>
   </div>
 
+  <!-- <script>
+    function restartClient(clientId) {
+      fetch(`/restart-client/${clientId}`, {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+    }
+  </script> -->
+  <!-- <script>
+    function restartClient(clientId) {
+      fetch(`/restart-client/${clientId}`, {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+    }
+  
+    function updateApp(clientId) {
+      fetch(`/update-app/${clientId}`, {
+        method: 'POST'
+      })
+      .then(response => response.json())
+      .then(data => alert(data.message))
+      .catch(error => console.error('Error:', error));
+    }
+  </script> -->
+  <!-- <script>
     function restartClient(clientId) {
       fetch(`/restart-client/${clientId}`, {
         method: 'POST'

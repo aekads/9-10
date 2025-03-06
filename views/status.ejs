@@ -86,19 +86,23 @@
     <h2><button id="Master_UPDATE_APP_SAKI">master UPDATE APP</button></h2>
     <h2><button id="master_EXO_PLAYER_VOL_DOWN">master_EXO_PLAYER_VOL_DOWN</button></h2>
     <h2><button id="Master_EXO_PLAYER_VOL_UP">Master_EXO_PLAYER_VOL_UP</button></h2>
-    <% function timeSince(dateTime) { const seconds=Math.floor((Date.now() - new Date(dateTime)) / 1000); let
-      interval=Math.floor(seconds / 86400); if (interval>= 1) return interval + " day" + (interval > 1 ? "s" : "") + "
-      ago";
+    <%
+function timeSince(dateTime) {
+    const seconds = Math.floor((Date.now() - new Date(dateTime)) / 1000);
+    let interval = Math.floor(seconds / 86400);
+    
+    if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
 
-      interval = Math.floor(seconds / 3600);
-      if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
 
-      interval = Math.floor(seconds / 60);
-      if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
 
-      return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
-      }
-      %>
+    return seconds + " second" + (seconds > 1 ? "s" : "") + " ago";
+}
+%>
+
       <% if (Object.keys(clientStatuses).length> 0 || Object.keys(networkStatuses).length > 0) { %>
         <table>
           <thead>
