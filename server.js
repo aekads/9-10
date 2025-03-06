@@ -715,7 +715,7 @@ wsServer.on('connection', async (ws, req) => {
                     ws.send(JSON.stringify({
                         status: 'success',
                         message: 'Data saved successfully.',
-                        type: data.type,
+                        type: 'VIDEO_IMPRESSION',
                         video_tag: data.video_tag
                     }));
 
@@ -747,7 +747,7 @@ wsServer.on('connection', async (ws, req) => {
                     ws.send(JSON.stringify({
                         status: 'success',
                         message: 'Data saved successfully.',
-                        type: data.type,
+                        type: 'VIDEO_IMPRESSION',    
                         video_tag: data.video_tag
                     }));
 
