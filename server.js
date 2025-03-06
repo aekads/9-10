@@ -1298,7 +1298,7 @@ app.post('/:volumeType/:id', (req, res) => {
   const ws = clients[clientId];
 
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: volumeType, volume: volume }));
+    ws.send(JSON.stringify({ type: volumeType, message: volume }));
     res.json({ message: `${volumeType} updated to ${volume} for client ${clientId}` });
   } else {
     res.status(404).json({ message: `Client ${clientId} is not connected` });
