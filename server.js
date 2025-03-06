@@ -737,7 +737,7 @@ wsServer.on('connection', async (ws, req) => {
           await pool.query(insertQuery, insertParams);
 
           console.log(`[SUCCESS] Video impression data saved for video ID: ${data.video_id}.`);
-          // ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+          ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
         }
 
         // Insert into the new table (video_impressions_log)
