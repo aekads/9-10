@@ -147,12 +147,12 @@ function timeSince(dateTime) {
                             name="MAIN_VOL_SEEKBAR-<%= clientId %>" min="0" max="15" value="8">
 
                           <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
-                          <input type="range" onchange="updateVolume('exoVolume', '<%= clientId %>', this.value)"
-                            name="exoVolume-<%= clientId %>" min="0" max="15" value="8">
+                          <input type="range" onchange="updateVolume('EXO_VOL_SEEKBAR', '<%= clientId %>', this.value)"
+                            name="EXO_VOL_SEEKBAR-<%= clientId %>" min="0" max="15" value="8">
 
                           <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
-                          <input type="range" onchange="updateVolume('youTubeVolume', '<%= clientId %>', this.value)"
-                            name="youTubeVolume-<%= clientId %>" min="0" max="15" value="8">
+                          <input type="range" onchange="updateVolume('YOUTUBE_VOL_SEEKBAR', '<%= clientId %>', this.value)"
+                            name="YOUTUBE_VOL_SEEKBAR-<%= clientId %>" min="0" max="15" value="8">
                         </div>
                       </td>
 
