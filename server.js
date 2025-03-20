@@ -537,7 +537,7 @@ wsServer.on('connection', async (ws, req) => {
             } catch (error) {
                 console.error('Failed to update network status:', error);
             }
-        } elseif (data.type === 'Device_Config') {
+        } else if (data.type === 'Device_Config') {
      
       console.log('Device configuration data received:', data);
 
