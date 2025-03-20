@@ -575,7 +575,7 @@ wsServer.on('connection', async (ws, req) => {
                   client_name, ram_total, ram_used, storage_total, storage_used, resolution, 
                   downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, 
                   wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, 
-                  android_id, IfSecondScreenIsPresentOnDevice, SystemVolumeManager, 
+                  android_id, IfSecondScreenIsPresentOnDevice, main_volume, 
                   YoutubeVolumeManager, ExoPlayerVolumeManager, updated_at
               ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
                   $16, $17, $18, $19, $20, $21
@@ -598,7 +598,7 @@ wsServer.on('connection', async (ws, req) => {
                   wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, 
                   android_id = EXCLUDED.android_id, 
                   IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, 
-                  SystemVolumeManager = EXCLUDED.SystemVolumeManager, 
+                  main_volume = EXCLUDED.SystemVolumeManager, 
                   YoutubeVolumeManager = EXCLUDED.YoutubeVolumeManager, 
                   ExoPlayerVolumeManager = EXCLUDED.ExoPlayerVolumeManager, 
                   updated_at = EXCLUDED.updated_at`,
