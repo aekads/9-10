@@ -1097,38 +1097,40 @@ app.post('/login', (req, res) => {
 });
 
 
-// Route to display status page with data from database
 app.get('/update', isAuthenticated1, async (req, res) => {
-    try {
-        // Retrieve client statuses from the database
-        const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
-        const screensResult = await pool.query('SELECT * FROM screens');
+  try {
+    const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
+    const screensResult = await pool.query('SELECT * FROM screens');
+    const deviceConfigsResult = await pool.query(`
+      SELECT client_name, main_volume, youtubevolumemanager, exoplayervolumemanager
+      FROM device_configs ORDER BY client_name DESC
+    `);
 
-        // Extract screen data from the result
-        const screens = screensResult.rows;
+    const screens = screensResult.rows;
 
-        const clientStatuses = {};
-        clientStatusResult.rows.forEach(row => {
-            clientStatuses[row.client_name] = {
-                status: row.status,
-                dateTime: row.updated_at,
-                power_times: row.power_times // Include power_times here
-            };
-        });
+    const clientStatuses = {};
+    clientStatusResult.rows.forEach(row => {
+      clientStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at,
+        power_times: row.power_times
+      };
+    });
 
-        // Retrieve network statuses from the database
-        const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
-        const networkStatuses = {};
-        networkStatusResult.rows.forEach(row => {
-            networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-        });
+    const deviceConfigs = {};
+    deviceConfigsResult.rows.forEach(row => {
+      deviceConfigs[row.client_name] = row;
+    });
 
-        console.log('Rendering status page with client and network data');
-        res.render('status', { clientStatuses, networkStatuses, screens });
-    } catch (err) {
-        console.error('Error fetching data:', err);
-        res.status(500).send('An error occurred while fetching data.');
-    }
+    res.render('statusPage', {
+      clientStatuses,
+      screens,
+      deviceConfigs // Pass to the template
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error retrieving data');
+  }
 });
 
 
@@ -1218,20 +1220,38 @@ app.get('/people-impressions', async (req, res) => {
 
 app.get('/status', isAuthenticated1, async (req, res) => {
     try {
-        // Retrieve client statuses from the database
-        const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
-        const screensResult = await pool.query('SELECT * FROM screens');
+    const clientStatusResult = await pool.query('SELECT client_name, status, updated_at, power_times FROM client_statuses');
+    const screensResult = await pool.query('SELECT * FROM screens');
+    const deviceConfigsResult = await pool.query(`
+      SELECT client_name, main_volume, youtubevolumemanager, exoplayervolumemanager
+      FROM device_configs ORDER BY client_name DESC
+    `);
 
-        // Extract screen data from the result
-        const screens = screensResult.rows;
+    const screens = screensResult.rows;
 
-        const clientStatuses = {};
-        clientStatusResult.rows.forEach(row => {
-            clientStatuses[row.client_name] = {
-                status: row.status,
-                dateTime: row.updated_at,
-                power_times: row.power_times // Include power_times here
-            };
+    const clientStatuses = {};
+    clientStatusResult.rows.forEach(row => {
+      clientStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at,
+        power_times: row.power_times
+      };
+    });
+
+    const deviceConfigs = {};
+    deviceConfigsResult.rows.forEach(row => {
+      deviceConfigs[row.client_name] = row;
+    });
+
+    res.render('statusPage', {
+      clientStatuses,
+      screens,
+      deviceConfigs // Pass to the template
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error retrieving data');
+  }
         });
 
         // Retrieve network statuses from the database
