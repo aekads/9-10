@@ -1132,7 +1132,7 @@ app.get('/update', isAuthenticated1, async (req, res) => {
 
     console.log('Rendering status page with client and network data');
 
-    res.render('statusPage', { // Ensure this matches your EJS filename
+    res.render('status', { // Ensure this matches your EJS filename
       clientStatuses,
       screens: screensResult.rows, // Pass screens directly
       deviceConfigs,
