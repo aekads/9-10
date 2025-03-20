@@ -537,70 +537,101 @@ wsServer.on('connection', async (ws, req) => {
             } catch (error) {
                 console.error('Failed to update network status:', error);
             }
-        } else if (data.type === 'Device_Config') {
-            console.log('Device configuration data received:', data);
+        } elseif (data.type === 'Device_Config') {
+     
+      console.log('Device configuration data received:', data);
 
-
-            console.log('Preparing to insert/update device configuration for client:', clientId);
-
-            // Printing all values before inserting into the database
-            console.log('Device Config Data:');
-            console.log('Client ID:', clientId);
-            console.log('RAM Total:', data.ram_total);
-            console.log('RAM Used:', data.ram_used);
-            console.log('Storage Total:', data.storage_total);
-            console.log('Storage Used:', data.storage_used);
-            console.log('Screen Resolution:', data['Screen-resolution']);
-            console.log('Downstream Bandwidth:', data.downstream_bandwidth);
-            console.log('Upstream Bandwidth:', data.upstream_bandwidth);
-            console.log('Manufacturer:', data.manufacturer);
-            console.log('Model:', data.model);
-            console.log('OS Version:', data.os_version);
-            console.log('WiFi Enabled:', data.wifiEnabled);
-            console.log('WiFi MAC Address:', data.wifiMacAddress);
-            console.log('WiFi Network SSID:', data.wifiNetworkSSID);
-            console.log('WiFi Signal Strength (dBm):', data.wifiSignalStrengthdBm);
-            console.log('Android ID:', data.androidId);
-            console.log('Second Screen Present:', data.IfSecondScreenIsPresentOnDevice);
-            console.log('System Volume:', data.SystemVolumeManager);
-            console.log('Updated At:', dateTime);
-
-            try {
-                console.log('Executing database query...');
-
-                await pool.query(
-                    'INSERT INTO device_configs (client_name, ram_total, ram_used, storage_total, storage_used, resolution, downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, android_id, IfSecondScreenIsPresentOnDevice, main_volume, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) ON CONFLICT (client_name) DO UPDATE SET ram_total = EXCLUDED.ram_total, ram_used = EXCLUDED.ram_used, storage_total = EXCLUDED.storage_total, storage_used = EXCLUDED.storage_used, resolution = EXCLUDED.resolution, downstream_bandwidth = EXCLUDED.downstream_bandwidth, upstream_bandwidth = EXCLUDED.upstream_bandwidth, manufacturer = EXCLUDED.manufacturer, model = EXCLUDED.model, os_version = EXCLUDED.os_version, wifi_enabled = EXCLUDED.wifi_enabled, wifi_mac_address = EXCLUDED.wifi_mac_address, wifi_network_ssid = EXCLUDED.wifi_network_ssid, wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, android_id = EXCLUDED.android_id, IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, main_volume = EXCLUDED.main_volume, updated_at = EXCLUDED.updated_at',
-                    [
-                        clientId,
-                        data.ram_total,
-                        data.ram_used,
-                        data.storage_total,
-                        data.storage_used,
-                        data['Screen-resolution'],
-                        data.downstream_bandwidth,
-                        data.upstream_bandwidth,
-                        data.manufacturer,
-                        data.model,
-                        data.os_version,
-                        data.wifiEnabled,
-                        data.wifiMacAddress,
-                        data.wifiNetworkSSID,
-                        data.wifiSignalStrengthdBm,
-                        data.androidId,
-                        data.IfSecondScreenIsPresentOnDevice,
-                        data.SystemVolumeManager,
-                        dateTime,
-                    ]
-                );
-
-                console.log(`✅ Successfully updated device configuration in database for client ${clientId} at ${dateTime}`);
-
-
-                console.log(`Device configuration updated in database for client ${clientId} at ${dateTime}`);
-            } catch (error) {
-                console.error(`Failed to update device configuration in database:`, error);
-            }
-        } else if (data.type === 'Screenshot') {
+      console.log('Preparing to insert/update device configuration for client:', clientId);
+  
+      // Printing all values before inserting into the database
+      console.log('Device Config Data:');
+      console.log('Client ID:', clientId);
+      console.log('RAM Total:', data.ram_total);
+      console.log('RAM Used:', data.ram_used);
+      console.log('Storage Total:', data.storage_total);
+      console.log('Storage Used:', data.storage_used);
+      console.log('Screen Resolution:', data['Screen-resolution']);
+      console.log('Downstream Bandwidth:', data.downstream_bandwidth);
+      console.log('Upstream Bandwidth:', data.upstream_bandwidth);
+      console.log('Manufacturer:', data.manufacturer);
+      console.log('Model:', data.model);
+      console.log('OS Version:', data.os_version);
+      console.log('WiFi Enabled:', data.wifiEnabled);
+      console.log('WiFi MAC Address:', data.wifiMacAddress);
+      console.log('WiFi Network SSID:', data.wifiNetworkSSID);
+      console.log('WiFi Signal Strength (dBm):', data.wifiSignalStrengthdBm);
+      console.log('Android ID:', data.androidId);
+      console.log('Second Screen Present:', data.IfSecondScreenIsPresentOnDevice);
+      console.log('System Volume:', data.SystemVolumeManager);
+      console.log('YouTube Volume:', data.YoutubeVolumeManager);
+      console.log('ExoPlayer Volume:', data.ExoPlayerVolumeManager);
+      console.log('Updated At:', dateTime);
+  
+      try {
+          console.log('Executing database query...');
+  
+          await pool.query(
+              `INSERT INTO device_configs (
+                  client_name, ram_total, ram_used, storage_total, storage_used, resolution, 
+                  downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, 
+                  wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, 
+                  android_id, IfSecondScreenIsPresentOnDevice, SystemVolumeManager, 
+                  YoutubeVolumeManager, ExoPlayerVolumeManager, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
+                  $16, $17, $18, $19, $20, $21
+              ) 
+              ON CONFLICT (client_name) 
+              DO UPDATE SET 
+                  ram_total = EXCLUDED.ram_total, 
+                  ram_used = EXCLUDED.ram_used, 
+                  storage_total = EXCLUDED.storage_total, 
+                  storage_used = EXCLUDED.storage_used, 
+                  resolution = EXCLUDED.resolution, 
+                  downstream_bandwidth = EXCLUDED.downstream_bandwidth, 
+                  upstream_bandwidth = EXCLUDED.upstream_bandwidth, 
+                  manufacturer = EXCLUDED.manufacturer, 
+                  model = EXCLUDED.model, 
+                  os_version = EXCLUDED.os_version, 
+                  wifi_enabled = EXCLUDED.wifi_enabled, 
+                  wifi_mac_address = EXCLUDED.wifi_mac_address, 
+                  wifi_network_ssid = EXCLUDED.wifi_network_ssid, 
+                  wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, 
+                  android_id = EXCLUDED.android_id, 
+                  IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, 
+                  SystemVolumeManager = EXCLUDED.SystemVolumeManager, 
+                  YoutubeVolumeManager = EXCLUDED.YoutubeVolumeManager, 
+                  ExoPlayerVolumeManager = EXCLUDED.ExoPlayerVolumeManager, 
+                  updated_at = EXCLUDED.updated_at`,
+              [
+                  clientId,
+                  data.ram_total,
+                  data.ram_used,
+                  data.storage_total,
+                  data.storage_used,
+                  data['Screen-resolution'],
+                  data.downstream_bandwidth,
+                  data.upstream_bandwidth,
+                  data.manufacturer,
+                  data.model,
+                  data.os_version,
+                  data.wifiEnabled,
+                  data.wifiMacAddress,
+                  data.wifiNetworkSSID,
+                  data.wifiSignalStrengthdBm,
+                  data.androidId,
+                  data.IfSecondScreenIsPresentOnDevice,
+                  data.SystemVolumeManager,
+                  data.YoutubeVolumeManager,
+                  data.ExoPlayerVolumeManager,
+                  dateTime,
+              ]
+          );
+  
+          console.log(`✅ Successfully updated device configuration in database for client ${clientId} at ${dateTime}`);
+      } catch (error) {
+        console.error(`Failed to update device configuration in database:`, error);
+      }
+} else if (data.type === 'Screenshot') {
             try {
                 const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
