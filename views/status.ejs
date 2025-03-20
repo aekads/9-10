@@ -141,28 +141,29 @@ function timeSince(dateTime) {
                         <%= timeSince(clientStatuses[clientId].dateTime) %>
                       </td>
                       <td>
-                     <% const deviceConfig = deviceConfigs[clientId]; %>
-                        <div style="display: flex; flex-direction: column;">
-                          <label for="MAIN_VOL_SEEKBAR-<%= clientId %>">Main Volume</label>
-                          <input type="range" onchange="updateVolume('MAIN_VOL_SEEKBAR', '<%= clientId %>', this.value)"
-                            name="MAIN_VOL_SEEKBAR-<%= clientId %>" 
-                            min="0" max="15" 
-                            value="<%= deviceConfig?.main_volume || 8 %>">
-                        
-                          <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
-                          <input type="range" onchange="updateVolume('EXO_VOL_SEEKBAR', '<%= clientId %>', this.value)"
-                            name="EXO_VOL_SEEKBAR-<%= clientId %>" 
-                            min="0" max="15" 
-                            value="<%= deviceConfig?.exoplayervolumemanager || 8 %>">
-                        
-                          <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
-                          <input type="range" onchange="updateVolume('YOUTUBE_VOL_SEEKBAR', '<%= clientId %>', this.value)"
-                            name="YOUTUBE_VOL_SEEKBAR-<%= clientId %>" 
-                            min="0" max="15" 
-                            value="<%= deviceConfig?.youtubevolumemanager || 8 %>">
-                        </div>
+                   <% Object.keys(deviceConfigs).forEach(clientId => { %>
+                      <% const deviceConfig = deviceConfigs[clientId]; %>
+                      <div style="display: flex; flex-direction: column;">
+                        <label for="MAIN_VOL_SEEKBAR-<%= clientId %>">Main Volume</label>
+                        <input type="range" onchange="updateVolume('MAIN_VOL_SEEKBAR', '<%= clientId %>', this.value)"
+                          name="MAIN_VOL_SEEKBAR-<%= clientId %>" 
+                          min="0" max="15" 
+                          value="<%= deviceConfig?.main_volume || 8 %>">
+                    
+                        <label for="exoVolume-<%= clientId %>">ExoPlayer Volume</label>
+                        <input type="range" onchange="updateVolume('EXO_VOL_SEEKBAR', '<%= clientId %>', this.value)"
+                          name="EXO_VOL_SEEKBAR-<%= clientId %>" 
+                          min="0" max="15" 
+                          value="<%= deviceConfig?.exoplayervolumemanager || 8 %>">
+                    
+                        <label for="youTubeVolume-<%= clientId %>">YouTube Volume</label>
+                        <input type="range" onchange="updateVolume('YOUTUBE_VOL_SEEKBAR', '<%= clientId %>', this.value)"
+                          name="YOUTUBE_VOL_SEEKBAR-<%= clientId %>" 
+                          min="0" max="15" 
+                          value="<%= deviceConfig?.youtubevolumemanager || 8 %>">
+                      </div>
+                    <% }) %>
 
-                  <% }) %>
 
                       </td>
 
