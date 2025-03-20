@@ -1105,9 +1105,9 @@ app.get('/update', isAuthenticated1, async (req, res) => {
       SELECT client_name, main_volume, youtubevolumemanager, exoplayervolumemanager
       FROM device_configs ORDER BY client_name DESC
     `);
+    const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
 
-    const screens = screensResult.rows;
-
+    // Convert database results into objects for easy lookup
     const clientStatuses = {};
     clientStatusResult.rows.forEach(row => {
       clientStatuses[row.client_name] = {
@@ -1122,17 +1122,28 @@ app.get('/update', isAuthenticated1, async (req, res) => {
       deviceConfigs[row.client_name] = row;
     });
 
-    res.render('statusPage', {
-      clientStatuses,
-      screens,
-      deviceConfigs // Pass to the template
+    const networkStatuses = {};
+    networkStatusResult.rows.forEach(row => {
+      networkStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at
+      };
     });
+
+    console.log('Rendering status page with client and network data');
+
+    res.render('statusPage', { // Ensure this matches your EJS filename
+      clientStatuses,
+      screens: screensResult.rows, // Pass screens directly
+      deviceConfigs,
+      networkStatuses
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error retrieving data');
+    console.error('Error fetching data:', error);
+    res.status(500).send('An error occurred while fetching data.');
   }
 });
-
 
 app.get('/video-impressions', async (req, res) => {
     try {
@@ -1226,9 +1237,9 @@ app.get('/status', isAuthenticated1, async (req, res) => {
       SELECT client_name, main_volume, youtubevolumemanager, exoplayervolumemanager
       FROM device_configs ORDER BY client_name DESC
     `);
+    const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
 
-    const screens = screensResult.rows;
-
+    // Convert database results into objects for easy lookup
     const clientStatuses = {};
     clientStatusResult.rows.forEach(row => {
       clientStatuses[row.client_name] = {
@@ -1243,30 +1254,27 @@ app.get('/status', isAuthenticated1, async (req, res) => {
       deviceConfigs[row.client_name] = row;
     });
 
-    res.render('statusPage', {
-      clientStatuses,
-      screens,
-      deviceConfigs // Pass to the template
+    const networkStatuses = {};
+    networkStatusResult.rows.forEach(row => {
+      networkStatuses[row.client_name] = {
+        status: row.status,
+        dateTime: row.updated_at
+      };
     });
+
+    console.log('Rendering status page with client and network data');
+
+    res.render('statusPage', { // Ensure this matches your EJS filename
+      clientStatuses,
+      screens: screensResult.rows, // Pass screens directly
+      deviceConfigs,
+      networkStatuses
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error retrieving data');
+    console.error('Error fetching data:', error);
+    res.status(500).send('An error occurred while fetching data.');
   }
-        });
-
-        // Retrieve network statuses from the database
-        const networkStatusResult = await pool.query('SELECT client_name, status, updated_at FROM network_statuses');
-        const networkStatuses = {};
-        networkStatusResult.rows.forEach(row => {
-            networkStatuses[row.client_name] = { status: row.status, dateTime: row.updated_at };
-        });
-
-        console.log('Rendering status page with client and network data');
-        res.render('status', { clientStatuses, networkStatuses, screens });
-    } catch (err) {
-        console.error('Error fetching data:', err);
-        res.status(500).send('An error occurred while fetching data.');
-    }
 });
 
 
