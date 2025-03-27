@@ -820,7 +820,7 @@ wsServer.on('connection', async (ws, req) => {
               status: 'success',
                       message: 'Data saved successfully.',
                       type: 'VIDEO_IMPRESSION',
-                      video_id: data.video_id
+                      video_id: data.video_tag
             }));
         }
                  console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
