@@ -702,6 +702,42 @@ wsServer.on('connection', async (ws, req) => {
             }
         }
 
+        else if (data.type === 'ClientScreenshot') {
+            try {
+                const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+
+                const query = `
+          INSERT INTO screenshots (id, filename2, image_url2, size2)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (id) 
+          DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+        `;
+                await pool.query(query, [
+                    data.id || data.Id,
+                    data.filename2,
+                    data.imageUrl2,
+                    data.size2 || null,
+                ]);
+
+                // Insert into log table
+                const logQuery = `
+          INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
+          VALUES ($1, $2, $3, $4, $5);
+        `;
+                await pool.query(logQuery, [
+                    data.id || data.Id,
+                    data.filename2,
+                    data.imageUrl2,
+                    data.size2 || null,
+                    istTime,
+                ]);
+
+                console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
+            } catch (error) {
+                console.error('Failed to save Screenshot2 data:', error);
+            }
+        }
+
         else if (data.type === 'video_impression') {
             console.log('[INFO] Processing "video_impression" message.');
 
@@ -2324,7 +2360,19 @@ app.get('/master-restart', (req, res) => {
 
 
 
+// ClientScreenshot Saki command
+app.get('/ClientScreenshot/:id', (req, res) => {
+  const clientId = req.params.id;
+  const ws = clients[clientId];
 
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'ClientScreenshot', message: 'ClientScreenshot' }));
+    sendEmail(clientId, 'ClientScreenshot');
+    res.json({ message: `ClientScreenshot command sent to client ${clientId}` });
+  } else {
+    res.status(404).json({ message: `Client ${clientId} is not connected` });
+  }
+});
 
 
 // Update App Saki command
