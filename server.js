@@ -703,64 +703,80 @@ ws.on('message', async (message) => {
 
   else if (data.type === 'ClientScreenshot') {
     try {
-      const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  console.log("Processing screenshot data:", data);
 
-      // Extract data from filename
-      const filename = data.filename; // Assuming filename is provided
-      const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\_(\d+)\.png/;
-      const match = filename.match(regex);
+  const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  console.log("Current IST Time:", istTime);
 
-      if (!match) {
-        console.error("Invalid filename format:", filename);
-        return;
-      }
+  // Extract data from filename
+  const filename = data.filename; // Assuming filename is provided
+  console.log("Received filename:", filename);
 
-      const [_, date, clientId, videoTag] = match;
-      const formattedDate = date; // Now storing only the date (DD-MM-YYYY)
+  const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\_(\d+)\.png/;
+  const match = filename.match(regex);
 
-      // Insert into screenshots table
-      const query = `
-  INSERT INTO screenshots (id, filename2, image_url2, size2)
-  VALUES ($1, $2, $3, $4)
-  ON CONFLICT (id) 
-  DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-`;
-      await pool.query(query, [
-        data.id || data.Id,
-        data.filename,
-        data.imageUrl,
-        data.size2 || null,
-      ]);
+  if (!match) {
+    console.error("Invalid filename format:", filename);
+    return;
+  }
 
-      // Insert into log table
-      const logQuery = `
-  INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
-  VALUES ($1, $2, $3, $4, $5);
-`;
-      await pool.query(logQuery, [
-        data.id || data.Id,
-        data.filename,
-        data.imageUrl,
-        data.size || null,
-        istTime,
-      ]);
+  const [_, date, clientId, videoTag] = match;
+  const formattedDate = date; // Now storing only the date (DD-MM-YYYY)
 
-      // Insert extracted data into screenshot_details table
-      const detailsQuery = `
-  INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
-  VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4);
-`;
-      await pool.query(detailsQuery, [
-        clientId,
-        videoTag,
-        formattedDate,  // Only Date
-        data.imageUrl
-      ]);
+  console.log("Extracted details - Date:", formattedDate, "Client ID:", clientId, "Video Tag:", videoTag);
 
-      console.log(`Screenshot2 data saved for ID ${data.id || data.Id}. Extracted details saved.`);
-    } catch (error) {
-      console.error('Failed to save Screenshot2 data:', error);
-    }
+  // Insert into screenshots table
+  const query = `
+    INSERT INTO screenshots (id, filename2, image_url2, size2)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (id) 
+    DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+  `;
+  
+  console.log("Executing query for screenshots table...");
+  await pool.query(query, [
+    data.id || data.Id,
+    data.filename,
+    data.imageUrl,
+    data.size2 || null,
+  ]);
+  console.log("Screenshot data inserted/updated successfully.");
+
+  // Insert into log table
+  const logQuery = `
+    INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
+    VALUES ($1, $2, $3, $4, $5);
+  `;
+  
+  console.log("Executing query for log table...");
+  await pool.query(logQuery, [
+    data.id || data.Id,
+    data.filename,
+    data.imageUrl,
+    data.size || null,
+    istTime,
+  ]);
+  console.log("Log data inserted successfully.");
+
+  // Insert extracted data into screenshot_details table
+  const detailsQuery = `
+    INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
+    VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4);
+  `;
+
+  console.log("Executing query for screenshot_details table...");
+  await pool.query(detailsQuery, [
+    clientId,
+    videoTag,
+    formattedDate,  // Only Date
+    data.imageUrl
+  ]);
+  console.log("Extracted details inserted successfully.");
+
+  console.log(`Screenshot2 data saved for ID ${data.id || data.Id}. Extracted details saved.`);
+} catch (error) {
+  console.error("Failed to save Screenshot2 data:", error);
+}
    } else if (data.type === 'video_impression') {
       console.log('[INFO] Processing "video_impression" message.');
 
