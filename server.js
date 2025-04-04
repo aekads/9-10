@@ -708,7 +708,7 @@ wsServer.on('connection', async (ws, req) => {
 
     // Extract data from filename
     const filename = data.filename; // Assuming filename is provided
-    const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\+_(\d+)\.png/;
+    const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\_(\d+)\.png/;
     const match = filename.match(regex);
 
     if (!match) {
