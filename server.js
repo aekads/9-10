@@ -700,7 +700,7 @@ wsServer.on('connection', async (ws, req) => {
             } catch (error) {
                 console.error('Failed to save Screenshot2 data:', error);
             }
-        }
+        }}
 
         else if (data.type === 'ClientScreenshot') {
            try {
