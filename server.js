@@ -508,396 +508,394 @@ wsServer.on('connection', async (ws, req) => {
   //   }
   // });
 
+ws.on('message', async (message) => {
+  console.log(`Received message: ${message}`);
 
-  ws.on('message', async (message) => {
-        console.log(`Received message: ${message}`);
+  let data;
+  try {
+    // Parse incoming message
+    data = JSON.parse(message);
+  } catch (error) {
+    console.error(`Failed to parse message: ${error.message}`);
+    return; // Exit if the message isn't valid JSON
+  }
 
-        let data;
-        try {
-            // Parse incoming message
-            data = JSON.parse(message);
-        } catch (error) {
-            console.error(`Failed to parse message: ${error.message}`);
-            return; // Exit if the message isn't valid JSON
-        }
+  const dateTime = new Date().toISOString(); // ISO format for consistency
 
-        const dateTime = new Date().toISOString(); // ISO format for consistency
+  if (data.type === 'network') {
+    try {
+      const query = `
+  INSERT INTO network_statuses (client_name, status, updated_at)
+  VALUES ($1, $2, $3)
+  ON CONFLICT (client_name) 
+  DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
+`;
+      await pool.query(query, [data.clientId, data.status, dateTime]);
+      console.log(`Network status updated for client ${data.clientId}.`);
+    } catch (error) {
+      console.error('Failed to update network status:', error);
+    }
+  } else if (data.type === 'Device_Config') {
 
-        if (data.type === 'network') {
-            try {
-                const query = `
-        INSERT INTO network_statuses (client_name, status, updated_at)
-        VALUES ($1, $2, $3)
+    console.log('Device configuration data received:', data);
+
+    console.log('Preparing to insert/update device configuration for client:', clientId);
+
+    // Printing all values before inserting into the database
+    console.log('Device Config Data:');
+    console.log('Client ID:', clientId);
+    console.log('RAM Total:', data.ram_total);
+    console.log('RAM Used:', data.ram_used);
+    console.log('Storage Total:', data.storage_total);
+    console.log('Storage Used:', data.storage_used);
+    console.log('Screen Resolution:', data['Screen-resolution']);
+    console.log('Downstream Bandwidth:', data.downstream_bandwidth);
+    console.log('Upstream Bandwidth:', data.upstream_bandwidth);
+    console.log('Manufacturer:', data.manufacturer);
+    console.log('Model:', data.model);
+    console.log('OS Version:', data.os_version);
+    console.log('WiFi Enabled:', data.wifiEnabled);
+    console.log('WiFi MAC Address:', data.wifiMacAddress);
+    console.log('WiFi Network SSID:', data.wifiNetworkSSID);
+    console.log('WiFi Signal Strength (dBm):', data.wifiSignalStrengthdBm);
+    console.log('Android ID:', data.androidId);
+    console.log('Second Screen Present:', data.IfSecondScreenIsPresentOnDevice);
+    console.log('System Volume:', data.SystemVolumeManager);
+    console.log('YouTube Volume:', data.YoutubeVolumeManager);
+    console.log('ExoPlayer Volume:', data.ExoPlayerVolumeManager);
+    console.log('Updated At:', dateTime);
+
+    try {
+      console.log('Executing database query...');
+
+      await pool.query(
+        `INSERT INTO device_configs (
+            client_name, ram_total, ram_used, storage_total, storage_used, resolution, 
+            downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, 
+            wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, 
+            android_id, IfSecondScreenIsPresentOnDevice, main_volume, 
+            YoutubeVolumeManager, ExoPlayerVolumeManager, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
+            $16, $17, $18, $19, $20, $21
+        ) 
         ON CONFLICT (client_name) 
-        DO UPDATE SET status = EXCLUDED.status, updated_at = EXCLUDED.updated_at;
-      `;
-                await pool.query(query, [data.clientId, data.status, dateTime]);
-                console.log(`Network status updated for client ${data.clientId}.`);
-            } catch (error) {
-                console.error('Failed to update network status:', error);
-            }
-        } else if (data.type === 'Device_Config') {
-     
-      console.log('Device configuration data received:', data);
+        DO UPDATE SET 
+            ram_total = EXCLUDED.ram_total, 
+            ram_used = EXCLUDED.ram_used, 
+            storage_total = EXCLUDED.storage_total, 
+            storage_used = EXCLUDED.storage_used, 
+            resolution = EXCLUDED.resolution, 
+            downstream_bandwidth = EXCLUDED.downstream_bandwidth, 
+            upstream_bandwidth = EXCLUDED.upstream_bandwidth, 
+            manufacturer = EXCLUDED.manufacturer, 
+            model = EXCLUDED.model, 
+            os_version = EXCLUDED.os_version, 
+            wifi_enabled = EXCLUDED.wifi_enabled, 
+            wifi_mac_address = EXCLUDED.wifi_mac_address, 
+            wifi_network_ssid = EXCLUDED.wifi_network_ssid, 
+            wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, 
+            android_id = EXCLUDED.android_id, 
+            IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, 
+            main_volume = EXCLUDED.main_volume, 
+            YoutubeVolumeManager = EXCLUDED.YoutubeVolumeManager, 
+            ExoPlayerVolumeManager = EXCLUDED.ExoPlayerVolumeManager, 
+            updated_at = EXCLUDED.updated_at`,
+        [
+          clientId,
+          data.ram_total,
+          data.ram_used,
+          data.storage_total,
+          data.storage_used,
+          data['Screen-resolution'],
+          data.downstream_bandwidth,
+          data.upstream_bandwidth,
+          data.manufacturer,
+          data.model,
+          data.os_version,
+          data.wifiEnabled,
+          data.wifiMacAddress,
+          data.wifiNetworkSSID,
+          data.wifiSignalStrengthdBm,
+          data.androidId,
+          data.IfSecondScreenIsPresentOnDevice,
+          data.SystemVolumeManager,
+          data.YoutubeVolumeManager,
+          data.ExoPlayerVolumeManager,
+          dateTime,
+        ]
+      );
 
-      console.log('Preparing to insert/update device configuration for client:', clientId);
-  
-      // Printing all values before inserting into the database
-      console.log('Device Config Data:');
-      console.log('Client ID:', clientId);
-      console.log('RAM Total:', data.ram_total);
-      console.log('RAM Used:', data.ram_used);
-      console.log('Storage Total:', data.storage_total);
-      console.log('Storage Used:', data.storage_used);
-      console.log('Screen Resolution:', data['Screen-resolution']);
-      console.log('Downstream Bandwidth:', data.downstream_bandwidth);
-      console.log('Upstream Bandwidth:', data.upstream_bandwidth);
-      console.log('Manufacturer:', data.manufacturer);
-      console.log('Model:', data.model);
-      console.log('OS Version:', data.os_version);
-      console.log('WiFi Enabled:', data.wifiEnabled);
-      console.log('WiFi MAC Address:', data.wifiMacAddress);
-      console.log('WiFi Network SSID:', data.wifiNetworkSSID);
-      console.log('WiFi Signal Strength (dBm):', data.wifiSignalStrengthdBm);
-      console.log('Android ID:', data.androidId);
-      console.log('Second Screen Present:', data.IfSecondScreenIsPresentOnDevice);
-      console.log('System Volume:', data.SystemVolumeManager);
-      console.log('YouTube Volume:', data.YoutubeVolumeManager);
-      console.log('ExoPlayer Volume:', data.ExoPlayerVolumeManager);
-      console.log('Updated At:', dateTime);
-  
-      try {
-          console.log('Executing database query...');
-  
-          await pool.query(
-              `INSERT INTO device_configs (
-                  client_name, ram_total, ram_used, storage_total, storage_used, resolution, 
-                  downstream_bandwidth, upstream_bandwidth, manufacturer, model, os_version, 
-                  wifi_enabled, wifi_mac_address, wifi_network_ssid, wifi_signal_strength_dbm, 
-                  android_id, IfSecondScreenIsPresentOnDevice, main_volume, 
-                  YoutubeVolumeManager, ExoPlayerVolumeManager, updated_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
-                  $16, $17, $18, $19, $20, $21
-              ) 
-              ON CONFLICT (client_name) 
-              DO UPDATE SET 
-                  ram_total = EXCLUDED.ram_total, 
-                  ram_used = EXCLUDED.ram_used, 
-                  storage_total = EXCLUDED.storage_total, 
-                  storage_used = EXCLUDED.storage_used, 
-                  resolution = EXCLUDED.resolution, 
-                  downstream_bandwidth = EXCLUDED.downstream_bandwidth, 
-                  upstream_bandwidth = EXCLUDED.upstream_bandwidth, 
-                  manufacturer = EXCLUDED.manufacturer, 
-                  model = EXCLUDED.model, 
-                  os_version = EXCLUDED.os_version, 
-                  wifi_enabled = EXCLUDED.wifi_enabled, 
-                  wifi_mac_address = EXCLUDED.wifi_mac_address, 
-                  wifi_network_ssid = EXCLUDED.wifi_network_ssid, 
-                  wifi_signal_strength_dbm = EXCLUDED.wifi_signal_strength_dbm, 
-                  android_id = EXCLUDED.android_id, 
-                  IfSecondScreenIsPresentOnDevice = EXCLUDED.IfSecondScreenIsPresentOnDevice, 
-                  main_volume = EXCLUDED.main_volume, 
-                  YoutubeVolumeManager = EXCLUDED.YoutubeVolumeManager, 
-                  ExoPlayerVolumeManager = EXCLUDED.ExoPlayerVolumeManager, 
-                  updated_at = EXCLUDED.updated_at`,
-              [
-                  clientId,
-                  data.ram_total,
-                  data.ram_used,
-                  data.storage_total,
-                  data.storage_used,
-                  data['Screen-resolution'],
-                  data.downstream_bandwidth,
-                  data.upstream_bandwidth,
-                  data.manufacturer,
-                  data.model,
-                  data.os_version,
-                  data.wifiEnabled,
-                  data.wifiMacAddress,
-                  data.wifiNetworkSSID,
-                  data.wifiSignalStrengthdBm,
-                  data.androidId,
-                  data.IfSecondScreenIsPresentOnDevice,
-                  data.SystemVolumeManager,
-                  data.YoutubeVolumeManager,
-                  data.ExoPlayerVolumeManager,
-                  dateTime,
-              ]
-          );
-  
-          console.log(`✅ Successfully updated device configuration in database for client ${clientId} at ${dateTime}`);
-      } catch (error) {
-        console.error(`Failed to update device configuration in database:`, error);
-      }
-} else if (data.type === 'Screenshot') {
-            try {
-                const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+      console.log(`✅ Successfully updated device configuration in database for client ${clientId} at ${dateTime}`);
+    } catch (error) {
+      console.error(`Failed to update device configuration in database:`, error);
+    }
+  } else if (data.type === 'Screenshot') {
+    try {
+      const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
-                const query = `
-          INSERT INTO screenshots (id, type, filename, image_url, size)
-          VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT (id) 
-          DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
-        `;
-                await pool.query(query, [
-                    data.id || data.Id,
-                    data.type,
-                    data.filename,
-                    data.imageUrl,
-                    data.size,
-                ]);
+      const query = `
+    INSERT INTO screenshots (id, type, filename, image_url, size)
+    VALUES ($1, $2, $3, $4, $5)
+    ON CONFLICT (id) 
+    DO UPDATE SET type = EXCLUDED.type, filename = EXCLUDED.filename, image_url = EXCLUDED.image_url, size = EXCLUDED.size;
+  `;
+      await pool.query(query, [
+        data.id || data.Id,
+        data.type,
+        data.filename,
+        data.imageUrl,
+        data.size,
+      ]);
 
-                // Insert data into the new table (no conflict handling, always inserts)
-                const logQuery = `
-          INSERT INTO screenshots_log (id, type, filename, image_url, size, created_at)
-          VALUES ($1, $2, $3, $4, $5, $6);
-        `;
-                await pool.query(logQuery, [
-                    data.id || data.Id,
-                    data.type,
-                    data.filename,
-                    data.imageUrl,
-                    data.size,
-                    istTime,
-                ]);
+      // Insert data into the new table (no conflict handling, always inserts)
+      const logQuery = `
+    INSERT INTO screenshots_log (id, type, filename, image_url, size, created_at)
+    VALUES ($1, $2, $3, $4, $5, $6);
+  `;
+      await pool.query(logQuery, [
+        data.id || data.Id,
+        data.type,
+        data.filename,
+        data.imageUrl,
+        data.size,
+        istTime,
+      ]);
 
-                console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
-            } catch (error) {
-                console.error('Failed to save Screenshot data:', error);
-            }
-        } else if (data.type === 'Screenshot2') {
-            try {
-                const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+      console.log(`Screenshot data saved for ID ${data.id || data.Id}.`);
+    } catch (error) {
+      console.error('Failed to save Screenshot data:', error);
+    }
+  } else if (data.type === 'Screenshot2') {
+    try {
+      const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
-                const query = `
-          INSERT INTO screenshots (id, filename2, image_url2, size2)
-          VALUES ($1, $2, $3, $4)
-          ON CONFLICT (id) 
-          DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-        `;
-                await pool.query(query, [
-                    data.id || data.Id,
-                    data.filename2,
-                    data.imageUrl2,
-                    data.size2,
-                ]);
+      const query = `
+    INSERT INTO screenshots (id, filename2, image_url2, size2)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (id) 
+    DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+  `;
+      await pool.query(query, [
+        data.id || data.Id,
+        data.filename2,
+        data.imageUrl2,
+        data.size2,
+      ]);
 
-                // Insert into log table
-                const logQuery = `
-          INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
-          VALUES ($1, $2, $3, $4, $5);
-        `;
-                await pool.query(logQuery, [
-                    data.id || data.Id,
-                    data.filename2,
-                    data.imageUrl2,
-                    data.size2,
-                    istTime,
-                ]);
+      // Insert into log table
+      const logQuery = `
+    INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
+    VALUES ($1, $2, $3, $4, $5);
+  `;
+      await pool.query(logQuery, [
+        data.id || data.Id,
+        data.filename2,
+        data.imageUrl2,
+        data.size2,
+        istTime,
+      ]);
 
-                console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
-            } catch (error) {
-                console.error('Failed to save Screenshot2 data:', error);
-            }
-        }}
+      console.log(`Screenshot2 data saved for ID ${data.id || data.Id}.`);
+    } catch (error) {
+      console.error('Failed to save Screenshot2 data:', error);
+    }
+  }
 
-        else if (data.type === 'ClientScreenshot') {
-           try {
-    const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  else if (data.type === 'ClientScreenshot') {
+    try {
+      const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
-    // Extract data from filename
-    const filename = data.filename; // Assuming filename is provided
-    const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\_(\d+)\.png/;
-    const match = filename.match(regex);
+      // Extract data from filename
+      const filename = data.filename; // Assuming filename is provided
+      const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})_(\d+)\_(\d+)\.png/;
+      const match = filename.match(regex);
 
-    if (!match) {
+      if (!match) {
         console.error("Invalid filename format:", filename);
         return;
-    }
+      }
 
-    const [_, date, clientId, videoTag] = match;
-    const formattedDate = date; // Now storing only the date (DD-MM-YYYY)
+      const [_, date, clientId, videoTag] = match;
+      const formattedDate = date; // Now storing only the date (DD-MM-YYYY)
 
-    // Insert into screenshots table
-    const query = `
-        INSERT INTO screenshots (id, filename2, image_url2, size2)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (id) 
-        DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-    `;
-    await pool.query(query, [
+      // Insert into screenshots table
+      const query = `
+  INSERT INTO screenshots (id, filename2, image_url2, size2)
+  VALUES ($1, $2, $3, $4)
+  ON CONFLICT (id) 
+  DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
+`;
+      await pool.query(query, [
         data.id || data.Id,
         data.filename,
         data.imageUrl,
         data.size2 || null,
-    ]);
+      ]);
 
-    // Insert into log table
-    const logQuery = `
-        INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
-        VALUES ($1, $2, $3, $4, $5);
-    `;
-    await pool.query(logQuery, [
+      // Insert into log table
+      const logQuery = `
+  INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
+  VALUES ($1, $2, $3, $4, $5);
+`;
+      await pool.query(logQuery, [
         data.id || data.Id,
         data.filename,
         data.imageUrl,
         data.size || null,
         istTime,
-    ]);
+      ]);
 
-    // Insert extracted data into screenshot_details table
-    const detailsQuery = `
-        INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
-        VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4);
-    `;
-    await pool.query(detailsQuery, [
+      // Insert extracted data into screenshot_details table
+      const detailsQuery = `
+  INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
+  VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4);
+`;
+      await pool.query(detailsQuery, [
         clientId,
         videoTag,
         formattedDate,  // Only Date
         data.imageUrl
-    ]);
+      ]);
 
-    console.log(`Screenshot2 data saved for ID ${data.id || data.Id}. Extracted details saved.`);
-} catch (error) {
-    console.error('Failed to save Screenshot2 data:', error);
-}
-        else if (data.type === 'video_impression') {
-            console.log('[INFO] Processing "video_impression" message.');
-
-     
-            try {
-                // Validate required fields and types
-                const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
-                for (const field of requiredFields) {
-                    if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
-                        throw new Error(`Missing or invalid field: ${field}`);
-                    }
-                }
-
-                const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
-                const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
-                const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
-                const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
-
-                // Check for existing entry in the main table
-                const checkQuery = `
-        SELECT id, count 
-        FROM video_impressions 
-        WHERE uploaded_date = $1 AND video_tag = $2 AND screen_id = $3
-    `;
-                const checkParams = [uploadedDate, data.video_tag, data.screen_id]; // Add the third parameter
-                const result = await pool.query(checkQuery, checkParams);
-
-                if (result.rows.length > 0) {
-                    // Entry exists; update the count
-                    const existingEntry = result.rows[0];
-                    const newCount = existingEntry.count + data.count;
-
-                    const updateQuery = `
-                UPDATE video_impressions 
-                SET count = $1, duration = $2 
-                WHERE id = $3
-            `;
-                    const updateParams = [newCount, data.duration, existingEntry.id];
-                    await pool.query(updateQuery, updateParams);
-                          console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-                          
-                          // ws.send(JSON.stringify({
-                          //     status: 'success',
-                          //     message: 'Data saved successfully.',
-                          //     type: 'VIDEO_IMPRESSION',
-                          //     video_id: data.video_id
-                          // }));
-                          
-                          // console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
+      console.log(`Screenshot2 data saved for ID ${data.id || data.Id}. Extracted details saved.`);
+    } catch (error) {
+      console.error('Failed to save Screenshot2 data:', error);
+    }
+   } else if (data.type === 'video_impression') {
+      console.log('[INFO] Processing "video_impression" message.');
 
 
-
-                } else {
-                    // Entry does not exist; insert a new record in the main table
-                    const insertQuery = `
-                INSERT INTO video_impressions (
-                    type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-            `;
-                    const insertParams = [
-                        data.type,
-                        data.video_id,
-                        data.screen_id,
-                        data.device_id,
-                        data.name,
-                        data.count,
-                        data.duration,
-                        data.video_tag,
-                        timestampInSeconds,
-                        uploadedTimeInSeconds,
-                        uploadedDate,
-                    ];
-                    await pool.query(insertQuery, insertParams);
-
-                  console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
-                  
-                  // ws.send(JSON.stringify({
-                  //     status: 'success',
-                  //     message: 'Data saved successfully.',
-                  //     type: 'VIDEO_IMPRESSION',
-                  //     video_id: data.video_id
-                  // }));
-                  
-                  console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
-
-
-                }
-
-                // Insert into the new table (video_impressions_log)
-                const logInsertQuery = `
-            INSERT INTO video_impressions_log (
-                type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
-            )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
-        `;
-                const logInsertParams = [
-                    data.type,
-                    data.video_id,
-                    data.screen_id,
-                    data.device_id,
-                    data.name,
-                    data.count,
-                    data.duration,
-                    data.video_tag,
-                    timestampInSeconds,
-                    uploadedTimeInSeconds,
-                    uploadedDate,
-                ];
-                await pool.query(logInsertQuery, logInsertParams);
-
-                console.log(`[SUCCESS] Video impression log entry saved for video ID: ${data.video_id}.`);
-                 // Send WebSocket response after successful batch insert
-        if (ws.readyState === ws.OPEN) {
-            ws.send(JSON.stringify({
-              status: 'success',
-                      message: 'Data saved successfully.',
-                      type: 'VIDEO_IMPRESSION',
-                      video_id: data.video_tag
-            }));
+      try {
+        // Validate required fields and types
+        const requiredFields = ['video_id', 'screen_id', 'device_id', 'name', 'count', 'duration', 'video_tag'];
+        for (const field of requiredFields) {
+          if (!data[field] || (typeof data[field] !== 'number' && typeof data[field] !== 'string')) {
+            throw new Error(`Missing or invalid field: ${field}`);
+          }
         }
-                 console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
 
-            } catch (error) {
-                const errorMessage = `Failed to save video impression data: ${error.message}`;
-                console.error('[ERROR]', errorMessage);
+        const IST_OFFSET_SECONDS = 19800; // +5:30 offset in seconds
+        const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+        const uploadedTimeInSeconds = Math.floor((data.uploaded_time_timestamp || Date.now()) / 1000) + IST_OFFSET_SECONDS;
+        const uploadedDate = new Date(uploadedTimeInSeconds * 1000).toISOString().split('T')[0]; // Extract the date in YYYY-MM-DD format
 
-                // ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
-            }
-        
-       
+        // Check for existing entry in the main table
+        const checkQuery = `
+  SELECT id, count 
+  FROM video_impressions 
+  WHERE uploaded_date = $1 AND video_tag = $2 AND screen_id = $3
+`;
+        const checkParams = [uploadedDate, data.video_tag, data.screen_id]; // Add the third parameter
+        const result = await pool.query(checkQuery, checkParams);
+
+        if (result.rows.length > 0) {
+          // Entry exists; update the count
+          const existingEntry = result.rows[0];
+          const newCount = existingEntry.count + data.count;
+
+          const updateQuery = `
+          UPDATE video_impressions 
+          SET count = $1, duration = $2 
+          WHERE id = $3
+      `;
+          const updateParams = [newCount, data.duration, existingEntry.id];
+          await pool.query(updateQuery, updateParams);
+          console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
+
+          // ws.send(JSON.stringify({
+          //     status: 'success',
+          //     message: 'Data saved successfully.',
+          //     type: 'VIDEO_IMPRESSION',
+          //     video_id: data.video_id
+          // }));
+
+          // console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
+
+
+
         } else {
-            console.log(`Unknown message type received: ${data.type}`);
-        }
-    });
+          // Entry does not exist; insert a new record in the main table
+          const insertQuery = `
+          INSERT INTO video_impressions (
+              type, video_id, screen_id, device_id, name, count, duration, video_tag, "timestamp", uploaded_time_timestamp, uploaded_date
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
+      `;
+          const insertParams = [
+            data.type,
+            data.video_id,
+            data.screen_id,
+            data.device_id,
+            data.name,
+            data.count,
+            data.duration,
+            data.video_tag,
+            timestampInSeconds,
+            uploadedTimeInSeconds,
+            uploadedDate,
+          ];
+          await pool.query(insertQuery, insertParams);
 
+          console.log(`[SUCCESS] Updated video impression data for video_tag: ${data.video_tag}, uploaded_date: ${uploadedDate}.`);
+
+          // ws.send(JSON.stringify({
+          //     status: 'success',
+          //     message: 'Data saved successfully.',
+          //     type: 'VIDEO_IMPRESSION',
+          //     video_id: data.video_id
+          // }));
+
+          console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
+
+
+        }
+
+        // Insert into the new table (video_impressions_log)
+        const logInsertQuery = `
+      INSERT INTO video_impressions_log (
+          type, video_id, screen_id, device_id, name, count, duration, video_tag, timestamp, uploaded_time_timestamp, uploaded_date
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TO_TIMESTAMP($9), TO_TIMESTAMP($10), $11)
+  `;
+        const logInsertParams = [
+          data.type,
+          data.video_id,
+          data.screen_id,
+          data.device_id,
+          data.name,
+          data.count,
+          data.duration,
+          data.video_tag,
+          timestampInSeconds,
+          uploadedTimeInSeconds,
+          uploadedDate,
+        ];
+        await pool.query(logInsertQuery, logInsertParams);
+
+        console.log(`[SUCCESS] Video impression log entry saved for video ID: ${data.video_id}.`);
+        // Send WebSocket response after successful batch insert
+        if (ws.readyState === ws.OPEN) {
+          ws.send(JSON.stringify({
+            status: 'success',
+            message: 'Data saved successfully.',
+            type: 'VIDEO_IMPRESSION',
+            video_id: data.video_tag
+          }));
+        }
+        console.log(`[INFO] WebSocket message sent for video_id: ${data.video_id}`);
+
+      } catch (error) {
+        const errorMessage = `Failed to save video impression data: ${error.message}`;
+        console.error('[ERROR]', errorMessage);
+
+        // ws.send(JSON.stringify({ status: 'error', message: errorMessage }));
+      }
+
+
+    } else {
+      console.log(`Unknown message type received: ${data.type}`);
+    }
+  });
 
 
 
