@@ -706,7 +706,7 @@ ws.on('message', async (message) => {
     const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
     // Extract data from filename
-    const filename = data.filename2; // Assuming filename is provided
+    const filename = data.filename; // Assuming filename is provided
     const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})-\d{2}:\d{2}:\d{2}_(\d+)_(\d+)_(\d+)\.png/;
     const match = filename.match(regex);
 
@@ -727,7 +727,7 @@ ws.on('message', async (message) => {
     `;
     await pool.query(query, [
         data.Id,
-        data.filename2,
+        data.filename,
         data.imageUrl,
         data.size2 || null,
     ]);
@@ -739,7 +739,7 @@ ws.on('message', async (message) => {
     `;
     await pool.query(logQuery, [
         data.Id,
-        data.filename2,
+        data.filename,
         data.imageUrl,
         data.size2 || null,
         istTime,
