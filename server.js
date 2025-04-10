@@ -702,7 +702,7 @@ ws.on('message', async (message) => {
   }
 
   else if (data.type === 'ClientScreenshot') {
-   try {
+    try {
     const istTime = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
 
     // Extract data from filename
@@ -718,38 +718,16 @@ ws.on('message', async (message) => {
     const [_, date, clientId, videoTag, extra] = match;
     const formattedDate = date; // Extract only the date (DD-MM-YYYY)
 
-    // Insert into screenshots table
-    const query = `
-        INSERT INTO screenshots (id, filename2, image_url2, size2)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (id) 
-        DO UPDATE SET filename2 = EXCLUDED.filename2, image_url2 = EXCLUDED.image_url2, size2 = EXCLUDED.size2;
-    `;
-    await pool.query(query, [
-        data.Id,
-        data.filename,
-        data.imageUrl,
-        data.size2 || null,
-    ]);
-
-    // Insert into log table
-    const logQuery = `
-        INSERT INTO screenshots_log (id, filename, image_url, size, created_at)
-        VALUES ($1, $2, $3, $4, $5);
-    `;
-    await pool.query(logQuery, [
-        data.Id,
-        data.filename,
-        data.imageUrl,
-        data.size2 || null,
-        istTime,
-    ]);
-
-    // Insert extracted data into screenshot_details table
-    const detailsQuery = `
-        INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
-        VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4);
-    `;
+    -- Insert or update screenshot details based on client_id and video_tag
+const detailsQuery = `
+    INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
+    VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4)
+    ON CONFLICT (client_id, video_tag) 
+    DO UPDATE 
+    SET 
+        date_time = TO_DATE($3, 'DD-MM-YYYY'),
+        image_url = $4;
+`;
     await pool.query(detailsQuery, [
         clientId,
         videoTag,
