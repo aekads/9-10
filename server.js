@@ -718,7 +718,7 @@ ws.on('message', async (message) => {
     const [_, date, clientId, videoTag, extra] = match;
     const formattedDate = date; // Extract only the date (DD-MM-YYYY)
 
-    -- Insert or update screenshot details based on client_id and video_tag
+    // Insert or update screenshot details based on client_id and video_tag
 const detailsQuery = `
     INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
     VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4)
