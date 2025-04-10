@@ -755,11 +755,11 @@ ws.on('message', async (message) => {
             data.imageUrl
         ]);
         console.log(`Screenshot inserted for client_id ${clientId}, video_tag ${videoTag}`, insertResult.rows[0]);
-      
-} catch (error) {
-    console.error('Failed to save Screenshot data:', error);
-}
-   } else if (data.type === 'video_impression') {
+ }
+    } catch (error) {
+        console.error('Failed to save Screenshot data:', error);
+    }
+}else if (data.type === 'video_impression') {
       console.log('[INFO] Processing "video_impression" message.');
 
 
