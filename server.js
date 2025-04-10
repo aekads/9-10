@@ -718,24 +718,44 @@ ws.on('message', async (message) => {
     const [_, date, clientId, videoTag, extra] = match;
     const formattedDate = date; // Extract only the date (DD-MM-YYYY)
 
-    // Insert or update screenshot details based on client_id and video_tag
-const detailsQuery = `
-    INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
-    VALUES ($1, $2, TO_DATE($3, 'DD-MM-YYYY'), $4)
-    ON CONFLICT (client_id, video_tag) 
-    DO UPDATE 
-    SET 
-        date_time = TO_DATE($3, 'DD-MM-YYYY'),
-        image_url = $4;
-`;
-    await pool.query(detailsQuery, [
-        clientId,
-        videoTag,
-        formattedDate,  // Only Date
-        data.imageUrl
-    ]);
+     // First, check if the record exists
+    const checkQuery = `
+        SELECT 1 FROM screenshot_details 
+        WHERE client_id = $1 AND video_tag = $2
+    `;
+    const checkResult = await pool.query(checkQuery, [clientId, videoTag]);
 
-    console.log(`Screenshot data saved for ID ${data.Id}. Extracted details saved.`);
+    if (checkResult.rowCount > 0) {
+        // If record exists, update it
+        const updateQuery = `
+            UPDATE screenshot_details 
+            SET date_time = TO_TIMESTAMP($3, 'DD-MM-YYYY'), 
+                image_url = $4
+            WHERE client_id = $1 AND video_tag = $2
+            RETURNING *;
+        `;
+        const updateResult = await pool.query(updateQuery, [
+            clientId,
+            videoTag,
+            formattedDate,
+            data.imageUrl
+        ]);
+        console.log(`Screenshot updated for client_id ${clientId}, video_tag ${videoTag}`, updateResult.rows[0]);
+    } else {
+        // If record does not exist, insert it
+        const insertQuery = `
+            INSERT INTO screenshot_details (client_id, video_tag, date_time, image_url)
+            VALUES ($1, $2, TO_TIMESTAMP($3, 'DD-MM-YYYY'), $4)
+            RETURNING *;
+        `;
+        const insertResult = await pool.query(insertQuery, [
+            clientId,
+            videoTag,
+            formattedDate,
+            data.imageUrl
+        ]);
+        console.log(`Screenshot inserted for client_id ${clientId}, video_tag ${videoTag}`, insertResult.rows[0]);
+      
 } catch (error) {
     console.error('Failed to save Screenshot data:', error);
 }
