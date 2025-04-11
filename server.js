@@ -890,7 +890,89 @@ ws.on('message', async (message) => {
       }
 
 
-    } else {
+    } else if (data.type === 'PEOPLE_IMPRESSION') {
+      console.log('[INFO] Processing "PEOPLE_IMPRESSION" message.');
+
+      try {
+          // Convert timestamp to IST
+          const IST_OFFSET_SECONDS = 19800;
+          const timestampInSeconds = Math.floor(data.timestamp / 1000) + IST_OFFSET_SECONDS;
+          const uploadedDate = new Date(timestampInSeconds * 1000).toISOString().split('T')[0];
+
+          // Check if an entry for this screen and date already exists
+          const checkQuery = `
+        SELECT id, face_count, male_count, female_count, age
+        FROM people_impressions 
+        WHERE uploaded_date = $1 AND screen_id = $2
+    `;
+          const checkParams = [uploadedDate, data.screenId];
+          const result = await pool.query(checkQuery, checkParams);
+
+          if (result.rows.length > 0) {
+              const existingEntry = result.rows[0];
+
+              // Aggregate the counts
+              const newFaceCount = existingEntry.face_count + data.faceCount;
+              const newMaleCount = existingEntry.male_count + data.maleCount;
+              const newFemaleCount = existingEntry.female_count + data.femaleCount;
+              const newAge = Math.round((existingEntry.age + data.age) / 2); // Average age calculation
+
+              // Update the existing record
+              const updateQuery = `
+            UPDATE people_impressions 
+            SET face_count = $1, male_count = $2, female_count = $3, age = $4
+            WHERE id = $5
+        `;
+              const updateParams = [newFaceCount, newMaleCount, newFemaleCount, newAge, existingEntry.id];
+              await pool.query(updateQuery, updateParams);
+
+              console.log(`[SUCCESS] Updated people impression data for screen ID: ${data.screenId}, uploaded_date: ${uploadedDate}.`);
+              // ws.send(JSON.stringify({ status: 'success', message: 'Data updated successfully.' }));
+          } else {
+              // Insert a new record
+              const insertQuery = `
+            INSERT INTO people_impressions (screen_id, face_count, male_count, female_count, age, timestamp, uploaded_date)
+            VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7)
+        `;
+              const insertParams = [
+                  data.screenId,
+                  data.faceCount,
+                  data.maleCount,
+                  data.femaleCount,
+                  data.age,
+                  timestampInSeconds,
+                  uploadedDate
+              ];
+              await pool.query(insertQuery, insertParams);
+
+              console.log(`[SUCCESS] People impression data saved for screen ID: ${data.screenId}.`);
+              // ws.send(JSON.stringify({ status: 'success', message: 'Data saved successfully.' }));
+          }
+
+          // Insert into log table
+          const logInsertQuery = `
+        INSERT INTO people_impressions_log (screen_id, face_count, male_count, female_count, age, timestamp, uploaded_date)
+        VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6), $7)
+    `;
+          const logInsertParams = [
+              data.screenId,
+              data.faceCount,
+              data.maleCount,
+              data.femaleCount,
+              data.age,
+              timestampInSeconds,
+              uploadedDate
+          ];
+          await pool.query(logInsertQuery, logInsertParams);
+
+          console.log(`[SUCCESS] People impression log entry saved for screen ID: ${data.screenId}.`);
+
+      } catch (error) {
+          console.error(`[ERROR] Failed to save people impression data: ${error.message}`);
+          // ws.send(JSON.stringify({ status: 'error', message: error.message }));
+      }
+  }
+  else {
       console.log(`Unknown message type received: ${data.type}`);
     }
   });
