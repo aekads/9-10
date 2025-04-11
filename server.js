@@ -707,7 +707,7 @@ ws.on('message', async (message) => {
 
     // Extract data from filename
     const filename = data.filename; // Assuming filename is provided
-    const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})-\d{2}:\d{2}:\d{2}_(\d+)_(\d+)_(\d+)\.png/;
+    const regex = /clientScreenShot_(\d{2}-\d{2}-\d{4})-\d{2}_\d{2}_\d{2}_(\d+)_([\d_]+)\.png/;
     const match = filename.match(regex);
 
     if (!match) {
